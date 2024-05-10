@@ -1,0 +1,24 @@
+profiles:
+  local:
+    data:
+      host: http://localhost:8000
+  production:
+    data:
+      host: https://rustynotes.appvault.fr
+
+requests:
+  test_private_route: !request
+    method: GET
+    url: "{{host}}/private/claims"
+    authentication: !bearer "eyJhaGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJTeFlHZ2VjQUdZalU0cTcyQkxlVlJyblktQTFocDUteHQzUV9HLVVTR1FNIn0.eyJleHAiOjE3MTUzNTAxODIsImlhdCI6MTcxNTM0OTg4MiwianRpIjoiOGVmZGJkZmMtZWE5YS00YWI4LWFkYWItNGQ3MDY2MjYwYjRiIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgxL3JlYWxtcy9ydXN0eV9ub3RlcyIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiIwNTEzYTZkMy0xNGE0LTQxMzQtYjc2OS1jMmQ1ZmQxMWYxMzMiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJydXN0eV9ub3Rlc19jbGllbnQiLCJzZXNzaW9uX3N0YXRlIjoiMWUyNjhkMWQtZDljMy00MjFkLTk1NWUtMDI5MTM4NDNjNzk0IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0OjgwODEiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtcnVzdHlfbm90ZXMiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMWUyNjhkMWQtZDljMy00MjFkLTk1NWUtMDI5MTM4NDNjNzk0IiwiZW1haWxfdmVyaWZpZWQiOnRydWUsIm5hbWUiOiJjeXJpbCBjeXJpbCIsInByZWZlcnJlZF91c2VybmFtZSI6ImN5cmlsIiwiZ2l2ZW5fbmFtZSI6ImN5cmlsIiwiZmFtaWx5X25hbWUiOiJjeXJpbCIsImVtYWlsIjoiY3lyaWwuY291ZmZlQHlhaG9vLmZyIn0.oPSdkqHX2SCFxeoyYrIsUyFJKcPCdekstUS528ilL7eTIYruqY3FNuMjyU5QHHOOz9KN_mL-Ws46J6gG8zEXAMdsSkZGGsqjnsO2HmfBo8eZq6PSdkZz3Il9tJ-5dPwtOtGCTTtEZURQuwTCx-eI6_cWXHdRsqIgZF_MFnRHEKnuxAt5lSivG-xIxC5Y2kEKxB28_90jX3S_BXuzkUzOjzhcpL0MnOOc6dtqLEVVtHQO7SdLuHAzIhMTPwj7zaRpXKYHDoId-YxMe0PpxfaCxKpFWBgFIU2od7Y2iyDhUxT07tMGLs9QgMGGMJUXClXrtrBhwqiUBYXr0kxZiWcerQ"
+
+  test_public_route: !request
+    method: GET
+    url: "{{host}}/hey"
+
+  get_token: !request
+    method: POST
+    url: "http://localhost:8081/realms/rusty_notes/protocol/openid-connect/token"
+    body: >
+      {"usename": "cyril", "password": "1234", "grant_type": "password", "client_id": "rusty_notes_client"}
+

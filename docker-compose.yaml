@@ -1,0 +1,73 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:latest
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: "exit 0"
+    ports:
+      - 5432:5432
+    networks:
+      - app_network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.4
+    command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_DATABASE: ${POSTGRES_DB}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_SCHEMA: public
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    ports:
+      - 8081:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app_network
+
+  front:
+    build:
+      context: ./front
+    volumes:
+      - ./front:/app
+    ports:
+      - "5173:5173"
+    command: ["npm", "run", "dev"]
+    depends_on:
+      - back
+    networks:
+      - app_network
+
+  back:
+    build:
+      context: ./back
+    volumes:
+      - ./back:/app
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgres://postgres:password@postgres/postgres
+      RUST_LOG: actix_web=info
+    depends_on:
+      - postgres
+      - keycloak
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

@@ -1,0 +1,8 @@
+[package]
+name = "back_rusty_notes"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4.5.1"
+actix-web-middleware-keycloak-auth = "0.4.2"
