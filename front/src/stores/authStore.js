@@ -1,7 +1,8 @@
-import { defineStore } from 'pinia';
-import keycloakService from '@services/keycloak';
+import { defineStore } from "pinia";
+import keycloakService from "@services/keycloak";
+import { useRouter } from "vue-router";
 
-export const useAuthStore = defineStore('auth', {
+export const useAuthStore = defineStore("auth", {
   state: () => {
     return {
       authenticated: false,
@@ -13,26 +14,25 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     // Initialize Keycloak OAuth
     async initOauth(keycloak, clearData = true) {
+      console.log(keycloak);
       if (clearData) {
         this.clearUserData();
       }
-
-      console.log(keycloak)
-
       this.authenticated = keycloak.authenticated;
       this.user.username = keycloak.tokenParsed.preferred_username;
       this.user.family_name = keycloak.tokenParsed.family_name;
       this.user.given_name = keycloak.tokenParsed.given_name;
       this.user.token = keycloak.token;
       this.user.refToken = keycloak.refreshToken;
-      this.user.roles =
-        keycloak.tokenParsed.resource_access.account.roles;
+      this.user.roles = keycloak.tokenParsed.resource_access.account.roles;
     },
     // Logout user
     async logout() {
       try {
+        const router = useRouter();
         keycloakService.CallLogout(import.meta.env.VITE_APP_URL);
         this.clearUserData();
+        router.push({ name: "home" });
       } catch (error) {
         console.error(error);
       }

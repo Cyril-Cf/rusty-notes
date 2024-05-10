@@ -1,4 +1,5 @@
-import Keycloak from 'keycloak-js';
+import Keycloak from "keycloak-js";
+import { useAuthStore } from "@/stores/authStore";
 
 const keycloak = new Keycloak({
   url: import.meta.env.VITE_KEYCLOAK_URL,
@@ -6,7 +7,6 @@ const keycloak = new Keycloak({
   realm: import.meta.env.VITE_KEYCLOAK_REALM,
 });
 
-let authenticated;
 let store = null;
 
 /**
@@ -16,38 +16,55 @@ let store = null;
  */
 async function init(onInitCallback) {
   try {
-    authenticated = await keycloak.init({ onLoad: "login-required" });
-    console.log(authenticated);
-    onInitCallback();
+    // await keycloak.init({
+    //   onLoad: "login-required",
+    // });
+    // await onInitCallback();
+
+    keycloak
+      .init({ onLoad: "login-required", checkLoginIframe: false })
+      .then((auth) => {
+        console.log("after login");
+        if (auth) {
+          console.log(keycloak);
+          // isAuthenticated.value = true
+          // const acceptedRoles = _.get(theme.value, 'keycloak.roles', [])
+          // if (_.isEmpty(acceptedRoles)) hasAccess.value = true
+          // else {
+          //   const userRoles = _.get(keycloak, 'realmAccess.roles', [])
+          //   if (!_.isEmpty(_.intersection(userRoles, acceptedRoles))) hasAccess.value = true
+          //   else $q.dialog({
+          //     title: 'Accés refusé',
+          //     message: 'Vous n\'êtes pas autorisé à accèder à ce site'
+          //   }).onOk(() => {
+          //     window.location.href=theme.value.keycloak.fallbackUrl
+          //   })
+          // }
+        }
+      });
   } catch (error) {
-    console.error('Keycloak init failed');
+    console.error("Keycloak init failed");
     console.error(error);
   }
 }
 
-/**
- * Initializes store with Keycloak user data
- */
-async function initStore(storeInstance) {
-  try {
-    store = storeInstance;
-    store.initOauth(keycloak);
-
-    // Show alert if user is not authenticated
-    if (!authenticated) {
-      alert('not authenticated');
-    }
-  } catch (error) {
-    console.error('Keycloak init failed');
-    console.error(error);
+function SaveUserToStore() {
+  const authenticated = keycloak.authenticated;
+  console.log(keycloak);
+  if (authenticated) {
+    console.log(
+      `User is ${authenticated ? "authenticated" : "not authenticated"}`
+    );
+    const authStore = new useAuthStore();
+    authStore.initOauth(keycloak);
   }
 }
 
 /**
  * Logout user
  */
-function logout(url) {
-  keycloak.logout({ redirectUri: url });
+function logout() {
+  keycloak.logout({ redirectUri: import.meta.env.VITE_APP_URL });
 }
 
 /**
@@ -58,16 +75,17 @@ async function refreshToken() {
     await keycloak.updateToken(300); // 300 secs | 5 mins
     return keycloak;
   } catch (error) {
-    console.error('Failed to refresh token');
+    console.error("Failed to refresh token");
     console.error(error);
   }
 }
 
 const KeycloakService = {
   CallInit: init,
-  CallInitStore: initStore,
   CallLogout: logout,
   CallTokenRefresh: refreshToken,
+  CallSaveUserToStore: SaveUserToStore,
+  CallKeycloak: keycloak,
 };
 
 export default KeycloakService;
