@@ -41,8 +41,11 @@ services:
       context: ./front
     volumes:
       - ./front:/app
+      - /app/node_modules
     ports:
       - "5173:5173"
+    env_file:
+      - .env
     command: ["npm", "run", "dev"]
     depends_on:
       - back
