@@ -1,0 +1,8 @@
+{
+  "realm": "rusty_notes",
+  "auth-server-url": "http://localhost:8081",
+  "ssl-required": "external",
+  "resource": "rusty_notes_client",
+  "public-client": true,
+  "confidential-port": 0
+}
