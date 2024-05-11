@@ -4,5 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+actix-cors = "0.7.0"
 actix-web = "4.5.1"
 actix-web-middleware-keycloak-auth = "0.4.2"

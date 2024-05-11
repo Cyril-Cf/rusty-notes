@@ -1,12 +1,10 @@
-use actix_web::{get, post, web, App, middleware, HttpResponse, HttpServer, Responder};
-use actix_web_middleware_keycloak_auth::{
-    AlwaysReturnPolicy, DecodingKey, KeycloakAuth, StandardKeycloakClaims,
-};
+use actix_cors::Cors;
+use actix_web::{get, middleware, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web_middleware_keycloak_auth::{AlwaysReturnPolicy, DecodingKey, KeycloakAuth};
 
-
-#[get("/claims")]
-async fn hello(claims: StandardKeycloakClaims) -> impl Responder {
-    HttpResponse::Ok().body(format!("{:?}", &claims))
+#[get("/users")]
+async fn users() -> impl Responder {
+    HttpResponse::Ok().body("hello from the API!")
 }
 
 #[post("/echo")]
@@ -25,6 +23,11 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxRwn7H5aSeOrCW7KQwx+gzuqCsAnrxQf0kO4
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
+        let cors = Cors::default()
+            .allow_any_origin()
+            .allow_any_method()
+            .allow_any_header()
+            .max_age(3600);
         let keycloak_auth = KeycloakAuth {
             detailed_responses: true,
             passthrough_policy: AlwaysReturnPolicy,
@@ -32,12 +35,9 @@ async fn main() -> std::io::Result<()> {
             required_roles: vec![],
         };
         App::new()
+            .wrap(cors)
             .wrap(middleware::Logger::default())
-            .service(
-                web::scope("/private")
-                    .wrap(keycloak_auth)
-                    .service(hello)
-            )
+            .service(web::scope("/api").wrap(keycloak_auth).service(users))
             .service(echo)
             .route("/hey", web::get().to(manual_hello))
     })
