@@ -23,7 +23,6 @@ async fn main() -> std::io::Result<()> {
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
     let conn = Database::connect(db_url).await.unwrap();
     println!("Checking migrations...");
-    Migrator::down(&conn, None).await.unwrap();
     let pending_migrations = Migrator::get_pending_migrations(&conn).await.unwrap();
     if pending_migrations.is_empty() {
         println!("No migration pending.")
