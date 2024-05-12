@@ -1,19 +1,16 @@
 use actix_cors::Cors;
-use actix_web::{get, middleware, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{web, App, HttpServer};
 use actix_web_middleware_keycloak_auth::{AlwaysReturnPolicy, DecodingKey, KeycloakAuth};
+use dotenv::dotenv;
+use migration::{Migrator, MigratorTrait};
+use sea_orm::{Database, DatabaseConnection};
 
-#[get("/users")]
-async fn users() -> impl Responder {
-    HttpResponse::Ok().body("hello from the API!")
-}
+mod controllers;
+mod services;
 
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
-}
-
-async fn manual_hello() -> impl Responder {
-    HttpResponse::Ok().body("Hey there!")
+#[derive(Debug, Clone)]
+struct AppState {
+    conn: DatabaseConnection,
 }
 
 const KEYCLOAK_PK: &str = "-----BEGIN PUBLIC KEY-----
@@ -22,7 +19,25 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxRwn7H5aSeOrCW7KQwx+gzuqCsAnrxQf0kO4
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
+    dotenv().ok();
+    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
+    let conn = Database::connect(db_url).await.unwrap();
+    println!("Checking migrations...");
+    Migrator::down(&conn, None).await.unwrap();
+    let pending_migrations = Migrator::get_pending_migrations(&conn).await.unwrap();
+    if pending_migrations.is_empty() {
+        println!("No migration pending.")
+    } else {
+        for migration in pending_migrations {
+            println!("migration pending: {}", migration.name());
+        }
+        Migrator::up(&conn, None).await.unwrap();
+        println!("Migrations applied!");
+    }
+    println!("Backend launched!");
+    let state = AppState { conn };
+
+    HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
             .allow_any_method()
@@ -36,10 +51,23 @@ async fn main() -> std::io::Result<()> {
         };
         App::new()
             .wrap(cors)
-            .wrap(middleware::Logger::default())
-            .service(web::scope("/api").wrap(keycloak_auth).service(users))
-            .service(echo)
-            .route("/hey", web::get().to(manual_hello))
+            .service(
+                web::scope("api")
+                    .wrap(keycloak_auth)
+                    .service(controllers::user_controller::add_user)
+                    .service(controllers::user_controller::find_one_user)
+                    .service(controllers::user_controller::find_all_users)
+                    .service(controllers::user_controller::update_user)
+                    .service(controllers::user_controller::delete_user)
+                    .service(controllers::permission_controller::add_permission)
+                    .service(controllers::permission_controller::find_all_permissions)
+                    .service(controllers::permission_controller::find_one_permission)
+                    .service(controllers::permission_controller::delete_permission)
+                    .service(controllers::user_permission_controller::add_permission_to_user)
+                    .service(controllers::user_permission_controller::get_permissions_for_user)
+                    .service(controllers::user_permission_controller::remove_permissions_for_user),
+            )
+            .app_data(web::Data::new(state.clone()))
     })
     .bind(("0.0.0.0", 8000))?
     .run()

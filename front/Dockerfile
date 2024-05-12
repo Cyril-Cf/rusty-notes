@@ -10,8 +10,8 @@ COPY . .
 # Installer les dépendances
 RUN npm install
 
-# Exposer le port 5173
-EXPOSE 5173
+# Exposer le port 3000
+EXPOSE 3000
 
 # Commande par défaut pour démarrer l'application
-CMD ["npm", "run", "serve"]
+CMD ["npm", "run", "dev"]
