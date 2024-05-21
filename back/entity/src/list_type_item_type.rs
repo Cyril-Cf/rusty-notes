@@ -42,3 +42,9 @@ impl Related<super::list_type::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl AsRef<str> for Entity {
+    fn as_ref(&self) -> &str {
+        "list_type_item_type"
+    }
+}

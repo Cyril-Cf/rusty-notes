@@ -36,8 +36,12 @@ impl MigrationTrait for Migration {
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        manager
-            .drop_table(sea_query::Table::drop().table(Entity).to_owned())
-            .await
+        if manager.has_table(Entity).await? {
+            manager
+                .drop_table(sea_query::Table::drop().table(Entity).cascade().to_owned())
+                .await?;
+        }
+        Ok(())
+        
     }
 }
