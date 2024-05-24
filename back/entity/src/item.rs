@@ -1,6 +1,8 @@
 use sea_orm::entity::prelude::*;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-#[derive(EnumIter, DeriveActiveEnum, Debug, Clone, PartialEq, Eq)]
+#[derive(EnumIter, DeriveActiveEnum, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "item_type")]
 pub enum ItemType {
     #[sea_orm(string_value = "Checkbox")]
@@ -9,15 +11,15 @@ pub enum ItemType {
     BulletPoint,
 }
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "item")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
+    pub id: Uuid,
     pub name: String,
     pub is_checked: bool,
-    pub id_list: i32,
-    pub item_type: ItemType
+    pub id_list: Uuid,
+    pub item_type: ItemType,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -31,7 +33,6 @@ pub enum Relation {
     )]
     List,
 }
-
 
 impl Related<super::list::Entity> for Entity {
     fn to() -> RelationDef {

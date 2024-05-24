@@ -1,6 +1,7 @@
 use sea_orm::entity::prelude::*;
+use serde::{Deserialize, Serialize};
 
-#[derive(EnumIter, DeriveActiveEnum, Debug, Clone, PartialEq, Eq)]
+#[derive(EnumIter, DeriveActiveEnum, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "list_type")]
 pub enum ListType {
     #[sea_orm(string_value = "ToDo")]
@@ -9,11 +10,11 @@ pub enum ListType {
     ToBuy,
 }
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Eq)]
 #[sea_orm(table_name = "list")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
+    pub id: Uuid,
     pub name: String,
     pub list_type: ListType,
 }

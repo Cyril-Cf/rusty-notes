@@ -4,9 +4,9 @@ use sea_orm::entity::prelude::*;
 #[sea_orm(table_name = "customer_list")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub id_list: i32,
+    pub id_list: Uuid,
     #[sea_orm(primary_key, auto_increment = false)]
-    pub id_customer: i32,
+    pub id_customer: Uuid,
     pub is_owner: bool,
 }
 

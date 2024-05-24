@@ -1,5 +1,5 @@
-use sea_orm_migration::prelude::*;
 use entity::customer_notification::*;
+use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -12,8 +12,8 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Entity)
                     .if_not_exists()
-                    .col(ColumnDef::new(Column::IdCustomer).integer().not_null())
-                    .col(ColumnDef::new(Column::IdNotification).integer().not_null())
+                    .col(ColumnDef::new(Column::IdCustomer).uuid().not_null())
+                    .col(ColumnDef::new(Column::IdNotification).uuid().not_null())
                     .primary_key(
                         Index::create()
                             .name("pk-customer-notification")
@@ -33,6 +33,5 @@ impl MigrationTrait for Migration {
                 .await?;
         }
         Ok(())
-        
     }
 }

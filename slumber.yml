@@ -4,7 +4,7 @@ profiles:
       host: http://localhost:8000
   production:
     data:
-      host: https://rustynotes.appvault.fr
+      host: https://rusty-notes.appvault.fr
 
 requests:
   test_private_route: !request
@@ -14,7 +14,7 @@ requests:
 
   test_public_route: !request
     method: GET
-    url: "{{host}}/hey"
+    url: "{{host}}/test"
 
   get_token: !request
     method: POST

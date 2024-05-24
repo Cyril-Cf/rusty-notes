@@ -13,10 +13,10 @@ pub enum NotificationType {
 #[sea_orm(table_name = "notification")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
+    pub id: Uuid,
     pub content: String,
     pub has_been_read: bool,
-    pub notification_type: NotificationType
+    pub notification_type: NotificationType,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -1,6 +1,6 @@
-use sea_orm_migration::prelude::*;
+use entity::customer::{Column as CustomerColumn, Entity as CustomerEntity};
 use entity::list_tag::*;
-use entity::customer::{Entity as CustomerEntity, Column as CustomerColumn};
+use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -13,15 +13,9 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Entity)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(Column::Id)
-                            .integer()
-                            .not_null()
-                            .auto_increment()
-                            .primary_key(),
-                    )
+                    .col(ColumnDef::new(Column::Id).uuid().not_null().primary_key())
                     .col(ColumnDef::new(Column::Name).string().not_null())
-                    .col(ColumnDef::new(Column::IdCustomer).integer().not_null())
+                    .col(ColumnDef::new(Column::IdCustomer).uuid().not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-customer-list-tag")
@@ -42,6 +36,5 @@ impl MigrationTrait for Migration {
                 .await?;
         }
         Ok(())
-        
     }
 }

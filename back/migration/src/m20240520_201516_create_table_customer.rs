@@ -1,5 +1,5 @@
-use sea_orm_migration::prelude::*;
 use entity::customer::*;
+use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -12,18 +12,17 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Entity)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(Column::Id)
-                            .integer()
-                            .not_null()
-                            .auto_increment()
-                            .primary_key(),
-                    )
+                    .col(ColumnDef::new(Column::Id).uuid().not_null().primary_key())
                     .col(ColumnDef::new(Column::Firstname).string().not_null())
                     .col(ColumnDef::new(Column::Lastname).string().not_null())
                     .col(ColumnDef::new(Column::Email).string().not_null())
-                    .col(ColumnDef::new(Column::KeycloakId).string().not_null())
-                    .col(ColumnDef::new(Column::IdCustomer).integer().unique_key().not_null())
+                    .col(ColumnDef::new(Column::KeycloakId).uuid().not_null())
+                    .col(
+                        ColumnDef::new(Column::IdCustomer)
+                            .uuid()
+                            .unique_key()
+                            .not_null(),
+                    )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-customer-customer-id")
@@ -44,6 +43,5 @@ impl MigrationTrait for Migration {
                 .await?;
         }
         Ok(())
-        
     }
 }

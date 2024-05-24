@@ -17,21 +17,15 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Entity)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(Column::Id)
-                            .integer()
-                            .not_null()
-                            .auto_increment()
-                            .primary_key(),
-                    )
+                    .col(ColumnDef::new(Column::Id).uuid().not_null().primary_key())
                     .col(ColumnDef::new(Column::Name).string().not_null())
                     .col(ColumnDef::new(Column::IsChecked).boolean().not_null())
-                    .col(ColumnDef::new(Column::IdList).integer().not_null())
+                    .col(ColumnDef::new(Column::IdList).uuid().not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-item-list")
                             .from(Entity, Column::IdList)
-                            .to(Entity, Column::Id)
+                            .to(ListEntity, ListColumn::Id)
                             .on_delete(ForeignKeyAction::NoAction)
                             .on_update(ForeignKeyAction::NoAction),
                     )

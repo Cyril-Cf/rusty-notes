@@ -5,8 +5,8 @@ use dotenv::dotenv;
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{Database, DatabaseConnection};
 
-// mod controllers;
-// mod services;
+mod controllers;
+mod services;
 
 #[derive(Debug, Clone)]
 struct AppState {
@@ -54,21 +54,20 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .service(
-                web::scope("api")
-                    .wrap(keycloak_auth)
-                    // .service(controllers::user_controller::add_user)
-                    // .service(controllers::user_controller::find_one_user)
-                    // .service(controllers::user_controller::find_all_users)
-                    // .service(controllers::user_controller::update_user)
-                    // .service(controllers::user_controller::delete_user)
-                    // .service(controllers::permission_controller::add_permission)
-                    // .service(controllers::permission_controller::find_all_permissions)
-                    // .service(controllers::permission_controller::find_one_permission)
-                    // .service(controllers::permission_controller::delete_permission)
-                    // .service(controllers::user_permission_controller::add_permission_to_user)
-                    // .service(controllers::user_permission_controller::get_permissions_for_user)
-                    // .service(controllers::user_permission_controller::remove_permissions_for_user),
+                web::scope("api").wrap(keycloak_auth), // .service(controllers::user_controller::add_user)
+                                                       // .service(controllers::user_controller::find_one_user)
+                                                       // .service(controllers::user_controller::find_all_users)
+                                                       // .service(controllers::user_controller::update_user)
+                                                       // .service(controllers::user_controller::delete_user)
+                                                       // .service(controllers::permission_controller::add_permission)
+                                                       // .service(controllers::permission_controller::find_all_permissions)
+                                                       // .service(controllers::permission_controller::find_one_permission)
+                                                       // .service(controllers::permission_controller::delete_permission)
+                                                       // .service(controllers::user_permission_controller::add_permission_to_user)
+                                                       // .service(controllers::user_permission_controller::get_permissions_for_user)
+                                                       // .service(controllers::user_permission_controller::remove_permissions_for_user),
             )
+            .service(controllers::test::test)
             .app_data(web::Data::new(state.clone()))
     })
     .bind(("0.0.0.0", 8000))?

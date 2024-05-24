@@ -1,5 +1,5 @@
-use sea_orm_migration::prelude::*;
 use entity::list_tag_list::*;
+use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -12,8 +12,8 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Entity)
                     .if_not_exists()
-                    .col(ColumnDef::new(Column::IdList).integer().not_null())
-                    .col(ColumnDef::new(Column::IdTagList).integer().not_null())
+                    .col(ColumnDef::new(Column::IdList).uuid().not_null())
+                    .col(ColumnDef::new(Column::IdTagList).uuid().not_null())
                     .primary_key(
                         Index::create()
                             .name("pk-list-tag-list")
@@ -33,6 +33,5 @@ impl MigrationTrait for Migration {
                 .await?;
         }
         Ok(())
-        
     }
 }

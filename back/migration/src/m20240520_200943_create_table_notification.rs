@@ -16,13 +16,7 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Entity)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(Column::Id)
-                            .integer()
-                            .not_null()
-                            .auto_increment()
-                            .primary_key(),
-                    )
+                    .col(ColumnDef::new(Column::Id).uuid().not_null().primary_key())
                     .col(ColumnDef::new(Column::Content).string().not_null())
                     .col(ColumnDef::new(Column::HasBeenRead).boolean().not_null())
                     .col(ColumnDef::new(Column::NotificationType).string().not_null())

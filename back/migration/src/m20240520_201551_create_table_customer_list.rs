@@ -1,5 +1,5 @@
-use sea_orm_migration::prelude::*;
 use entity::customer_list::*;
+use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -13,8 +13,8 @@ impl MigrationTrait for Migration {
                     .table(Entity)
                     .if_not_exists()
                     .col(ColumnDef::new(Column::IsOwner).boolean().not_null())
-                    .col(ColumnDef::new(Column::IdCustomer).integer().not_null())
-                    .col(ColumnDef::new(Column::IdList).integer().not_null())
+                    .col(ColumnDef::new(Column::IdCustomer).uuid().not_null())
+                    .col(ColumnDef::new(Column::IdList).uuid().not_null())
                     .primary_key(
                         Index::create()
                             .name("pk-customer-list")
@@ -34,6 +34,5 @@ impl MigrationTrait for Migration {
                 .await?;
         }
         Ok(())
-        
     }
 }
