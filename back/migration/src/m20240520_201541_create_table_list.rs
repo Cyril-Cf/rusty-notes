@@ -1,13 +1,16 @@
-use sea_orm_migration::prelude::*;
 use entity::list::*;
-use entity::list_type::{Entity as ListTypeEntity, Column as ListTypeColumn};
-
+use sea_orm::{DbBackend, Schema};
+use sea_orm_migration::prelude::*;
 #[derive(DeriveMigrationName)]
 pub struct Migration;
 
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        let schema = Schema::new(DbBackend::Postgres);
+        manager
+            .create_type(schema.create_enum_from_active_enum::<ListType>())
+            .await?;
         manager
             .create_table(
                 Table::create()
@@ -21,15 +24,7 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Column::Name).string().not_null())
-                    .col(ColumnDef::new(Column::IdListType).integer().not_null())
-                    .foreign_key(
-                        ForeignKey::create()
-                            .name("fk-list-list-type")
-                            .from(Entity, Column::IdListType)
-                            .to(ListTypeEntity, ListTypeColumn::Id)
-                            .on_delete(ForeignKeyAction::NoAction)
-                            .on_update(ForeignKeyAction::NoAction),
-                    )
+                    .col(ColumnDef::new(Column::ListType).string().not_null())
                     .to_owned(),
             )
             .await
@@ -41,7 +36,10 @@ impl MigrationTrait for Migration {
                 .drop_table(sea_query::Table::drop().table(Entity).cascade().to_owned())
                 .await?;
         }
+        manager
+            .get_connection()
+            .execute_unprepared("DROP TYPE list_type;")
+            .await?;
         Ok(())
-        
     }
 }

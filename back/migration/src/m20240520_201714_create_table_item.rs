@@ -1,14 +1,17 @@
-use sea_orm_migration::prelude::*;
 use entity::item::*;
-use entity::list::{Entity as ListEntity, Column as ListColumn};
-use entity::item_type::{Entity as ItemTypeEntity, Column as ItemTypeColumn};
-
+use entity::list::{Column as ListColumn, Entity as ListEntity};
+use sea_orm::{DbBackend, Schema};
+use sea_orm_migration::prelude::*;
 #[derive(DeriveMigrationName)]
 pub struct Migration;
 
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        let schema = Schema::new(DbBackend::Postgres);
+        manager
+            .create_type(schema.create_enum_from_active_enum::<ItemType>())
+            .await?;
         manager
             .create_table(
                 Table::create()
@@ -28,19 +31,11 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("fk-item-list")
                             .from(Entity, Column::IdList)
-                            .to(ItemTypeEntity, ItemTypeColumn::Id)
+                            .to(Entity, Column::Id)
                             .on_delete(ForeignKeyAction::NoAction)
                             .on_update(ForeignKeyAction::NoAction),
                     )
-                    .col(ColumnDef::new(Column::IdItemType).integer().not_null())
-                    .foreign_key(
-                        ForeignKey::create()
-                            .name("fk-item-item-type")
-                            .from(Entity, Column::IdItemType)
-                            .to(ListEntity, ListColumn::Id)
-                            .on_delete(ForeignKeyAction::NoAction)
-                            .on_update(ForeignKeyAction::NoAction),
-                    )
+                    .col(ColumnDef::new(Column::ItemType).string().not_null())
                     .to_owned(),
             )
             .await
@@ -52,7 +47,10 @@ impl MigrationTrait for Migration {
                 .drop_table(sea_query::Table::drop().table(Entity).cascade().to_owned())
                 .await?;
         }
+        manager
+            .get_connection()
+            .execute_unprepared("DROP TYPE item_type;")
+            .await?;
         Ok(())
-        
     }
 }

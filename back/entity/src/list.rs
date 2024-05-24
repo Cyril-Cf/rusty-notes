@@ -1,12 +1,21 @@
 use sea_orm::entity::prelude::*;
 
+#[derive(EnumIter, DeriveActiveEnum, Debug, Clone, PartialEq, Eq)]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "list_type")]
+pub enum ListType {
+    #[sea_orm(string_value = "ToDo")]
+    ToDo,
+    #[sea_orm(string_value = "ToBuy")]
+    ToBuy,
+}
+
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "list")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub name: String,
-    pub id_list_type: i32,
+    pub list_type: ListType,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -17,14 +26,6 @@ pub enum Relation {
     Item,
     #[sea_orm(has_many = "super::list_tag_list::Entity")]
     Listtaglist,
-    #[sea_orm(
-        belongs_to = "super::list_type::Entity",
-        from = "Column::IdListType",
-        to = "super::list_type::Column::Id",
-        on_update = "NoAction",
-        on_delete = "NoAction"
-    )]
-    Listtype,
 }
 
 impl Related<super::customer_list::Entity> for Entity {
@@ -42,12 +43,6 @@ impl Related<super::item::Entity> for Entity {
 impl Related<super::list_tag_list::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Listtaglist.def()
-    }
-}
-
-impl Related<super::list_type::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Listtype.def()
     }
 }
 

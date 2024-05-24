@@ -1,5 +1,14 @@
 use sea_orm::entity::prelude::*;
 
+#[derive(EnumIter, DeriveActiveEnum, Debug, Clone, PartialEq, Eq)]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "item_type")]
+pub enum ItemType {
+    #[sea_orm(string_value = "Checkbox")]
+    Checkbox,
+    #[sea_orm(string_value = "BulletPoint")]
+    BulletPoint,
+}
+
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "item")]
 pub struct Model {
@@ -7,20 +16,12 @@ pub struct Model {
     pub id: i32,
     pub name: String,
     pub is_checked: bool,
-    pub id_item_type: i32,
     pub id_list: i32,
+    pub item_type: ItemType
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(
-        belongs_to = "super::item_type::Entity",
-        from = "Column::IdItemType",
-        to = "super::item_type::Column::Id",
-        on_update = "NoAction",
-        on_delete = "NoAction"
-    )]
-    Itemtype,
     #[sea_orm(
         belongs_to = "super::list::Entity",
         from = "Column::IdList",
@@ -31,11 +32,6 @@ pub enum Relation {
     List,
 }
 
-impl Related<super::item_type::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Itemtype.def()
-    }
-}
 
 impl Related<super::list::Entity> for Entity {
     fn to() -> RelationDef {
