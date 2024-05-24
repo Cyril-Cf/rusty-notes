@@ -1,6 +1,10 @@
 # rusty-notes
 
+WIP -  toy project (Actix web - Vue.js - Keycloak)
+The aim is to have a todo list that's self-hosted with a social aspect (joined notes between users)
 
-creer un .env depuis le .env.local
-attendre que le keycloak soit lancé, créer le realm rusty_notes et le user principal admin du realm
-configurer le realm aussi avec url du front, les groupes et tout le tintouin
+Setup to self-host :
+- create an .env from the local .env.
+- docker compose up
+- wait for the keycloak to be launched, create the rusty_notes realm and the main user admin of the realm
+configure the realm also with front url, groups
