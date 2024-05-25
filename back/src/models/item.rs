@@ -1,5 +1,5 @@
 use diesel::prelude::*;
-use juniper::{GraphQLEnum, GraphQLObject};
+use juniper::{GraphQLEnum, GraphQLInputObject, GraphQLObject};
 use uuid::Uuid;
 
 use crate::schema::items;
@@ -20,4 +20,21 @@ pub struct Item {
 pub enum ItemType {
     Checkbox,
     BulletPoint,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = items)]
+pub struct NewItem {
+    pub name: String,
+    pub is_checked: bool,
+    pub list_id: Uuid,
+    pub item_type: ItemType,
+}
+
+#[derive(GraphQLInputObject)]
+pub struct CreateItem {
+    pub name: String,
+    pub is_checked: bool,
+    pub list_id: Uuid,
+    pub item_type: ItemType,
 }

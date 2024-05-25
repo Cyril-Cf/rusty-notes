@@ -1,10 +1,10 @@
 use diesel::prelude::*;
-use juniper::{GraphQLEnum, GraphQLObject};
+use juniper::{GraphQLEnum, GraphQLInputObject, GraphQLObject};
 use uuid::Uuid;
 
 use crate::schema::lists;
 
-#[derive(Queryable, Insertable, Identifiable, Debug, GraphQLObject)]
+#[derive(Queryable, Identifiable, Debug, GraphQLObject)]
 #[diesel(table_name = lists)]
 #[graphql(description = "A list")]
 pub struct List {
@@ -25,4 +25,17 @@ pub enum ListType {
 pub struct ListChangeset {
     pub name: Option<String>,
     pub list_type: Option<ListType>,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = lists)]
+pub struct NewList {
+    pub name: String,
+    pub list_type: ListType,
+}
+
+#[derive(GraphQLInputObject)]
+pub struct CreateList {
+    pub name: String,
+    pub list_type: ListType,
 }
