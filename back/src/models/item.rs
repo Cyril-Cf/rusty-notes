@@ -25,6 +25,7 @@ pub enum ItemType {
 #[derive(Insertable)]
 #[diesel(table_name = items)]
 pub struct NewItem {
+    pub id: Uuid,
     pub name: String,
     pub is_checked: bool,
     pub list_id: Uuid,

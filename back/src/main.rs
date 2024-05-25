@@ -8,6 +8,7 @@ use r2d2::Pool;
 mod graphql_logic;
 mod models;
 mod schema;
+mod services;
 
 use graphql_logic::db::get_pool;
 use graphql_logic::endpoints::graphql_endpoints;

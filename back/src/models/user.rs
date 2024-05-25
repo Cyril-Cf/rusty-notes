@@ -18,6 +18,7 @@ pub struct User {
 #[derive(AsChangeset)]
 #[diesel(table_name = users)]
 pub struct UserChangeset {
+    pub id: Option<Uuid>,
     pub firstname: Option<String>,
     pub lastname: Option<String>,
     pub email: Option<String>,
@@ -36,6 +37,15 @@ pub struct NewUser {
 
 #[derive(GraphQLInputObject)]
 pub struct CreateUser {
+    pub firstname: String,
+    pub lastname: String,
+    pub email: String,
+    pub keycloak_uuid: Uuid,
+}
+
+#[derive(GraphQLInputObject)]
+pub struct ModifyUser {
+    pub id: Uuid,
     pub firstname: String,
     pub lastname: String,
     pub email: String,

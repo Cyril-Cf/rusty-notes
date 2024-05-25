@@ -39,7 +39,7 @@ diesel::table! {
     list_tags (id) {
         id -> Uuid,
         name -> Varchar,
-        user_id -> Uuid,
+        list_id -> Uuid,
     }
 }
 
@@ -51,6 +51,7 @@ diesel::table! {
         id -> Uuid,
         name -> Varchar,
         list_type -> ListType,
+        user_id -> Uuid,
     }
 }
 
@@ -78,7 +79,8 @@ diesel::table! {
 }
 
 diesel::joinable!(items -> lists (list_id));
-diesel::joinable!(list_tags -> users (user_id));
+diesel::joinable!(list_tags -> lists (list_id));
+diesel::joinable!(lists -> users (user_id));
 diesel::joinable!(notifications -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
