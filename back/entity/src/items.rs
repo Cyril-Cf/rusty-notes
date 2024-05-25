@@ -12,7 +12,7 @@ pub enum ItemType {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, DeriveEntityModel, Eq)]
-#[sea_orm(table_name = "item")]
+#[sea_orm(table_name = "items")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Uuid,
@@ -25,16 +25,16 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::list::Entity",
+        belongs_to = "super::lists::Entity",
         from = "Column::IdList",
-        to = "super::list::Column::Id",
+        to = "super::lists::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
     List,
 }
 
-impl Related<super::list::Entity> for Entity {
+impl Related<super::lists::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::List.def()
     }

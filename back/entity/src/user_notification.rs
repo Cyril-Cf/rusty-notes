@@ -1,10 +1,10 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-#[sea_orm(table_name = "customer_notification")]
+#[sea_orm(table_name = "user_notification")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub id_customer: Uuid,
+    pub id_user: Uuid,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id_notification: Uuid,
 }
@@ -12,30 +12,30 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::customer::Entity",
-        from = "Column::IdCustomer",
-        to = "super::customer::Column::Id",
+        belongs_to = "super::users::Entity",
+        from = "Column::IdUser",
+        to = "super::users::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    Customer,
+    User,
     #[sea_orm(
-        belongs_to = "super::notification::Entity",
+        belongs_to = "super::notifications::Entity",
         from = "Column::IdNotification",
-        to = "super::notification::Column::Id",
+        to = "super::notifications::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
     Notification,
 }
 
-impl Related<super::customer::Entity> for Entity {
+impl Related<super::users::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Customer.def()
+        Relation::User.def()
     }
 }
 
-impl Related<super::notification::Entity> for Entity {
+impl Related<super::notifications::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Notification.def()
     }

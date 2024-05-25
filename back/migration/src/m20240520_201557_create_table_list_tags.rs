@@ -1,4 +1,5 @@
-use entity::customer::*;
+use entity::list_tags::*;
+use entity::users::{Column as UserColumn, Entity as UserEntity};
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
@@ -13,22 +14,14 @@ impl MigrationTrait for Migration {
                     .table(Entity)
                     .if_not_exists()
                     .col(ColumnDef::new(Column::Id).uuid().not_null().primary_key())
-                    .col(ColumnDef::new(Column::Firstname).string().not_null())
-                    .col(ColumnDef::new(Column::Lastname).string().not_null())
-                    .col(ColumnDef::new(Column::Email).string().not_null())
-                    .col(ColumnDef::new(Column::KeycloakId).uuid().not_null())
-                    .col(
-                        ColumnDef::new(Column::IdCustomer)
-                            .uuid()
-                            .unique_key()
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(Column::Name).string().not_null())
+                    .col(ColumnDef::new(Column::IdUser).uuid().not_null())
                     .foreign_key(
                         ForeignKey::create()
-                            .name("fk-customer-customer-id")
-                            .from(Entity, Column::Id)
-                            .to(Entity, Column::IdCustomer)
-                            .on_delete(ForeignKeyAction::Cascade)
+                            .name("fk-user-list-tag")
+                            .from(Entity, Column::IdUser)
+                            .to(UserEntity, UserColumn::Id)
+                            .on_delete(ForeignKeyAction::NoAction)
                             .on_update(ForeignKeyAction::NoAction),
                     )
                     .to_owned(),

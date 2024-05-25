@@ -12,30 +12,30 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::list::Entity",
+        belongs_to = "super::lists::Entity",
         from = "Column::IdList",
-        to = "super::list::Column::Id",
+        to = "super::lists::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
     List,
     #[sea_orm(
-        belongs_to = "super::list_tag::Entity",
+        belongs_to = "super::list_tags::Entity",
         from = "Column::IdTagList",
-        to = "super::list_tag::Column::Id",
+        to = "super::list_tags::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
     Listtag,
 }
 
-impl Related<super::list::Entity> for Entity {
+impl Related<super::lists::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::List.def()
     }
 }
 
-impl Related<super::list_tag::Entity> for Entity {
+impl Related<super::list_tags::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Listtag.def()
     }

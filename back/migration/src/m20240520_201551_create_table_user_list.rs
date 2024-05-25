@@ -1,4 +1,4 @@
-use entity::customer_notification::*;
+use entity::user_list::*;
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
@@ -12,13 +12,14 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Entity)
                     .if_not_exists()
-                    .col(ColumnDef::new(Column::IdCustomer).uuid().not_null())
-                    .col(ColumnDef::new(Column::IdNotification).uuid().not_null())
+                    .col(ColumnDef::new(Column::IsOwner).boolean().not_null())
+                    .col(ColumnDef::new(Column::IdUser).uuid().not_null())
+                    .col(ColumnDef::new(Column::IdList).uuid().not_null())
                     .primary_key(
                         Index::create()
-                            .name("pk-customer-notification")
-                            .col(Column::IdCustomer)
-                            .col(Column::IdNotification)
+                            .name("pk-user-list")
+                            .col(Column::IdUser)
+                            .col(Column::IdList)
                             .primary(),
                     )
                     .to_owned(),

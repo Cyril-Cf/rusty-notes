@@ -11,7 +11,7 @@ pub enum ListType {
 }
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Eq)]
-#[sea_orm(table_name = "list")]
+#[sea_orm(table_name = "lists")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Uuid,
@@ -21,21 +21,21 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::customer_list::Entity")]
-    Customerlist,
-    #[sea_orm(has_many = "super::item::Entity")]
+    #[sea_orm(has_many = "super::user_list::Entity")]
+    Userlist,
+    #[sea_orm(has_many = "super::items::Entity")]
     Item,
     #[sea_orm(has_many = "super::list_tag_list::Entity")]
     Listtaglist,
 }
 
-impl Related<super::customer_list::Entity> for Entity {
+impl Related<super::user_list::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Customerlist.def()
+        Relation::Userlist.def()
     }
 }
 
-impl Related<super::item::Entity> for Entity {
+impl Related<super::items::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Item.def()
     }
@@ -47,16 +47,16 @@ impl Related<super::list_tag_list::Entity> for Entity {
     }
 }
 
-impl Related<super::customer::Entity> for Entity {
+impl Related<super::users::Entity> for Entity {
     fn to() -> RelationDef {
-        super::customer_list::Relation::Customer.def()
+        super::user_list::Relation::User.def()
     }
     fn via() -> Option<RelationDef> {
-        Some(super::customer_list::Relation::List.def().rev())
+        Some(super::user_list::Relation::List.def().rev())
     }
 }
 
-impl Related<super::list_tag::Entity> for Entity {
+impl Related<super::list_tags::Entity> for Entity {
     fn to() -> RelationDef {
         super::list_tag_list::Relation::Listtag.def()
     }

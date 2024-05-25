@@ -1,8 +1,9 @@
-pub mod customer;
-pub mod customer_list;
-pub mod customer_notification;
-pub mod item;
-pub mod list;
-pub mod list_tag;
+pub mod friendships;
+pub mod items;
 pub mod list_tag_list;
-pub mod notification;
+pub mod list_tags;
+pub mod lists;
+pub mod notifications;
+pub mod user_list;
+pub mod user_notification;
+pub mod users;

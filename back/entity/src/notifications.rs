@@ -10,7 +10,7 @@ pub enum NotificationType {
 }
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-#[sea_orm(table_name = "notification")]
+#[sea_orm(table_name = "notifications")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Uuid,
@@ -21,26 +21,22 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::customer_notification::Entity")]
-    Customernotification,
+    #[sea_orm(has_many = "super::user_notification::Entity")]
+    Usernotification,
 }
 
-impl Related<super::customer_notification::Entity> for Entity {
+impl Related<super::user_notification::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Customernotification.def()
+        Relation::Usernotification.def()
     }
 }
 
-impl Related<super::customer::Entity> for Entity {
+impl Related<super::users::Entity> for Entity {
     fn to() -> RelationDef {
-        super::customer_notification::Relation::Customer.def()
+        super::user_notification::Relation::User.def()
     }
     fn via() -> Option<RelationDef> {
-        Some(
-            super::customer_notification::Relation::Notification
-                .def()
-                .rev(),
-        )
+        Some(super::user_notification::Relation::Notification.def().rev())
     }
 }
 

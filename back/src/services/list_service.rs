@@ -1,5 +1,5 @@
-use entity::item::{Entity as ItemEntity, ItemType, Model as ItemModel};
-use entity::list::{Entity, ListType, Model};
+use entity::items::{Entity as ItemEntity, ItemType, Model as ItemModel};
+use entity::lists::{Entity, ListType, Model};
 use sea_orm::{
     entity::ActiveValue, ActiveModelTrait, DatabaseConnection, DbErr, DeleteResult, EntityTrait,
     ModelTrait,
@@ -15,14 +15,14 @@ use uuid::Uuid;
 // }
 
 pub async fn create(new_name: String, conn: &DatabaseConnection) -> Result<ItemModel, DbErr> {
-    let model = entity::list::ActiveModel {
+    let model = entity::lists::ActiveModel {
         name: ActiveValue::Set(new_name),
         list_type: ActiveValue::Set(ListType::ToDo),
         id: ActiveValue::Set(Uuid::new_v4()),
     }
     .insert(conn)
     .await?;
-    entity::item::ActiveModel {
+    entity::items::ActiveModel {
         id: ActiveValue::Set(Uuid::new_v4()),
         id_list: ActiveValue::Set(model.id),
         is_checked: ActiveValue::Set(false),

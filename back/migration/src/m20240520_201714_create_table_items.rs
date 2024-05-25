@@ -1,5 +1,5 @@
-use entity::item::*;
-use entity::list::{Column as ListColumn, Entity as ListEntity};
+use entity::items::*;
+use entity::lists::{Column as ListColumn, Entity as ListEntity};
 use sea_orm::{DbBackend, Schema};
 use sea_orm_migration::prelude::*;
 #[derive(DeriveMigrationName)]
