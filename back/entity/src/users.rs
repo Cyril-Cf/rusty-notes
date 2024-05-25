@@ -1,7 +1,9 @@
+use juniper::GraphQLObject;
 use sea_orm::entity::prelude::*;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, GraphQLObject)]
 #[sea_orm(table_name = "users")]
+#[graphql(description = "A user in the system")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Uuid,

@@ -1,12 +1,36 @@
 use actix_cors::Cors;
-use actix_web::{web, App, HttpServer};
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use actix_web_middleware_keycloak_auth::{AlwaysReturnPolicy, DecodingKey, KeycloakAuth};
 use dotenv::dotenv;
+use graphql::{create_schema, Schema};
+use juniper::http::{graphiql::graphiql_source, GraphQLRequest};
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{Database, DatabaseConnection};
+use std::sync::Arc;
 
 mod controllers;
+mod graphql;
 mod services;
+
+#[post("/graphql")]
+async fn graphql_entrypoint(
+    app_data: web::Data<AppState>,
+    data: web::Json<GraphQLRequest>,
+    schema: web::Data<Schema>,
+) -> impl Responder {
+    let ctx = graphql::Context {
+        db: app_data.conn.clone(),
+    };
+
+    let res = data.execute(&schema, &ctx).await;
+    serde_json::to_string(&res).unwrap()
+}
+
+#[get("/graphiql")]
+async fn graphiql() -> impl Responder {
+    let html = graphiql_source("/graphql", None);
+    HttpResponse::Ok().body(html)
+}
 
 #[derive(Debug, Clone)]
 struct AppState {
@@ -21,7 +45,7 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmdwo76aI5UQEBYQKlW6d7PmX95+RcK+LT7a6
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
-    let conn = Database::connect(db_url).await.unwrap();
+    let conn = Database::connect(&db_url).await.unwrap();
     println!("Emptying DB...");
     Migrator::down(&conn, None).await.unwrap();
     println!("DB empty!");
@@ -36,8 +60,10 @@ async fn main() -> std::io::Result<()> {
         Migrator::up(&conn, None).await.unwrap();
         println!("Migrations applied!");
     }
-    println!("Backend launched!");
+    let schema = Arc::new(create_schema());
     let state = AppState { conn };
+
+    println!("Backend launched!");
 
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -53,6 +79,10 @@ async fn main() -> std::io::Result<()> {
         };
         App::new()
             .wrap(cors)
+            .app_data(web::Data::from(schema.clone()))
+            .app_data(web::Data::new(state.clone()))
+            .service(graphql_entrypoint)
+            .service(graphiql)
             .service(
                 web::scope("api").wrap(keycloak_auth), // .service(controllers::user_controller::add_user)
                                                        // .service(controllers::user_controller::find_one_user)
@@ -68,7 +98,6 @@ async fn main() -> std::io::Result<()> {
                                                        // .service(controllers::user_permission_controller::remove_permissions_for_user),
             )
             .service(controllers::test::test)
-            .app_data(web::Data::new(state.clone()))
     })
     .bind(("0.0.0.0", 8000))?
     .run()

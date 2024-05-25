@@ -18,6 +18,8 @@ serde = { version = "1.0.192", features = ["derive"] }
 serde_json = "1.0.108"
 dotenv = "0.15.0"
 uuid = { version = "1.8.0", features = ["v4"] }
+juniper = { version = "0.16.1", features = ["uuid"] }
+juniper_actix = "0.5.0"
 
 [dependencies.sea-orm]
 version = "0.12.6"
