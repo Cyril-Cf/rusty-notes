@@ -19,7 +19,9 @@ pub struct List {
 #[derive(diesel_derive_enum::DbEnum, Debug, GraphQLEnum, Clone)]
 #[ExistingTypePath = "crate::schema::sql_types::ListType"]
 pub enum ListType {
+    #[db_rename = "TO_DO"]
     ToDo,
+    #[db_rename = "TO_BUY"]
     ToBuy,
 }
 
@@ -31,6 +33,7 @@ pub struct ListGraphQL {
     pub list_type: ListType,
     pub tags: Vec<ListTag>,
     pub items: Vec<Item>,
+    pub user_id: Uuid,
 }
 
 #[derive(AsChangeset)]
@@ -46,12 +49,14 @@ pub struct NewList {
     pub id: Uuid,
     pub name: String,
     pub list_type: ListType,
+    pub user_id: Uuid,
 }
 
 #[derive(GraphQLInputObject)]
 pub struct CreateList {
     pub name: String,
     pub list_type: ListType,
+    pub user_id: Uuid,
 }
 
 #[derive(GraphQLInputObject)]

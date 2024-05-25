@@ -1,5 +1,4 @@
--- Remplacez 'Type1', 'Type2', 'Type3' par les valeurs réelles de votre énumération ListType
-CREATE TYPE list_type AS ENUM ('ToDo', 'ToBuy');
+CREATE TYPE list_type AS ENUM ('TO_DO', 'TO_BUY');
 CREATE TABLE lists (
     id UUID PRIMARY KEY NOT NULL,
     name VARCHAR NOT NULL,

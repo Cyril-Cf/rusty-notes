@@ -1,5 +1,4 @@
-CREATE TYPE item_type AS ENUM ('Checkbox', 'BulletPoint');
--- Remplacez par les valeurs réelles de votre énumération ItemType
+CREATE TYPE item_type AS ENUM ('CHECKBOX', 'BULLETPOINT');
 CREATE TABLE items (
     id UUID PRIMARY KEY NOT NULL,
     name VARCHAR NOT NULL,

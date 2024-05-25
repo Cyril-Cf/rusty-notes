@@ -1,4 +1,4 @@
-CREATE TYPE notification_type AS ENUM ('NewFriend', 'NewList');
+CREATE TYPE notification_type AS ENUM ('NEW_FRIEND', 'NEW_LIST');
 CREATE TABLE notifications (
     id UUID PRIMARY KEY NOT NULL,
     content VARCHAR NOT NULL,

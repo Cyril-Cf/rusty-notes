@@ -27,6 +27,8 @@ pub struct NotificationChangeset {
 #[derive(diesel_derive_enum::DbEnum, Debug, GraphQLEnum)]
 #[ExistingTypePath = "crate::schema::sql_types::NotificationType"]
 pub enum NotificationType {
+    #[db_rename = "NEWFRIEND"]
     NewFriend,
+    #[db_rename = "NEWLIST"]
     NewList,
 }

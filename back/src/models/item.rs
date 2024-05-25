@@ -18,7 +18,9 @@ pub struct Item {
 #[derive(diesel_derive_enum::DbEnum, Debug, GraphQLEnum)]
 #[ExistingTypePath = "crate::schema::sql_types::ItemType"]
 pub enum ItemType {
+    #[db_rename = "CHECKBOX"]
     Checkbox,
+    #[db_rename = "BULLETPOINT"]
     BulletPoint,
 }
 
