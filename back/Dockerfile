@@ -4,6 +4,8 @@ FROM rust:1.78
 # Installer cargo-watch
 RUN cargo install cargo-watch
 
+RUN cargo install diesel_cli
+
 # Définir le répertoire de travail dans le conteneur
 WORKDIR /app
 

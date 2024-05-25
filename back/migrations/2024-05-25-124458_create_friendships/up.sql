@@ -1,0 +1,7 @@
+CREATE TABLE friendships (
+    id UUID PRIMARY KEY NOT NULL,
+    user_id UUID NOT NULL,
+    user_id2 UUID NOT NULL,
+    CONSTRAINT fk_user1_friendship FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT fk_user2_friendship FOREIGN KEY (user_id2) REFERENCES users(id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);

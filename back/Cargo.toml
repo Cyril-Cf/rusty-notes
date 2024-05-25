@@ -5,11 +5,10 @@ edition = "2021"
 authors = ["Cyril Couffe <no-reply@rust-lang.org>"]
 
 [workspace]
-members = [".", "entity", "migration"]
+members = ["."]
 
 [dependencies]
-entity = { path = "./entity" }
-migration = { path = "./migration" }
+env_logger = "0.11.3"
 actix-cors = "0.7.0"
 actix-web = "4.5.1"
 actix-web-middleware-keycloak-auth = "0.4.2"
@@ -20,7 +19,6 @@ dotenv = "0.15.0"
 uuid = { version = "1.8.0", features = ["v4"] }
 juniper = { version = "0.16.1", features = ["uuid"] }
 juniper_actix = "0.5.0"
-
-[dependencies.sea-orm]
-version = "0.12.6"
-features = ["debug-print", "runtime-tokio-rustls", "sqlx-postgres"]
+diesel = { version = "2.1.6", features = ["postgres", "uuid", "r2d2"] }
+diesel-derive-enum = { version = "2.1.0", features = ["postgres"] }
+r2d2 = "0.8.10"

@@ -1,0 +1,6 @@
+CREATE TABLE list_tags (
+    id UUID PRIMARY KEY NOT NULL,
+    name VARCHAR NOT NULL,
+    user_id UUID NOT NULL,
+    CONSTRAINT fk_user_list_tag FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);

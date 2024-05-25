@@ -1,9 +1,0 @@
-pub mod friendships;
-pub mod items;
-pub mod list_tag_list;
-pub mod list_tags;
-pub mod lists;
-pub mod notifications;
-pub mod user_list;
-pub mod user_notification;
-pub mod users;

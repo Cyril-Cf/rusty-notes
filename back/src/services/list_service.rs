@@ -1,20 +1,31 @@
 use entity::items::{Entity as ItemEntity, ItemType, Model as ItemModel};
-use entity::lists::{Entity, ListType, Model};
+use entity::lists::{Column, Entity, ListType, Model};
+use entity::users::{Entity as UserEntity, Model as UserModel};
 use sea_orm::{
     entity::ActiveValue, ActiveModelTrait, DatabaseConnection, DbErr, DeleteResult, EntityTrait,
     ModelTrait,
 };
 use uuid::Uuid;
 
-// pub async fn find_one(id: Uuid, conn: &DatabaseConnection) -> Result<Option<Model>, DbErr> {
-//     Entity::find_by_id(id).one(conn).await
-// }
+pub async fn find_one_with_tags_and_items(
+    id: Uuid,
+    conn: &DatabaseConnection,
+) -> Result<Option<Model>, DbErr> {
+    Entity::find_by_id(id).one(conn).await
+}
 
-// pub async fn find_all(conn: &DatabaseConnection) -> Result<Vec<Model>, DbErr> {
-//     Entity::find().all(conn).await
-// }
+pub async fn find_all_for_user(conn: &DatabaseConnection, id: Uuid) -> Result<Vec<Model>, DbErr> {
+    match UserEntity::find_by_id(id).one(conn).await? {
+        Some(user) => user.find_related(Entity).all(conn).await,
+        None => Ok(Vec::new()),
+    }
+}
 
-pub async fn create(new_name: String, conn: &DatabaseConnection) -> Result<ItemModel, DbErr> {
+pub async fn create(
+    new_name: String,
+    user_id: Uuid,
+    conn: &DatabaseConnection,
+) -> Result<ItemModel, DbErr> {
     let model = entity::lists::ActiveModel {
         name: ActiveValue::Set(new_name),
         list_type: ActiveValue::Set(ListType::ToDo),
