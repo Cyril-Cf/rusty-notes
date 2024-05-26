@@ -1,5 +1,5 @@
 use super::context::GraphQLContext;
-use crate::models::item::{CreateItem, Item};
+use crate::models::item::{CreateItem, Item, UpdateItem};
 use crate::models::list::{CreateList, ListGraphQL};
 use crate::models::list_tag::{CreateListTag, ListTag};
 use crate::models::user::{CreateUser, ModifyUser, User};
@@ -8,8 +8,30 @@ use crate::services::list_service;
 use crate::services::list_tag_service;
 use crate::services::user_service;
 use juniper::FieldError;
-use juniper::{EmptySubscription, FieldResult, RootNode};
+use juniper::{EmptySubscription, FieldResult, GraphQLEnum, GraphQLObject, RootNode};
 use uuid::Uuid;
+
+#[derive(Debug, GraphQLObject)]
+pub struct DeleteResult {
+    pub status: DeleteStatus,
+}
+
+#[derive(Debug, GraphQLEnum)]
+pub enum DeleteStatus {
+    ResourceDeleted,
+    NoDeletion,
+}
+
+#[derive(Debug, GraphQLObject)]
+pub struct UpdateResult {
+    pub status: UpdateStatus,
+}
+
+#[derive(Debug, GraphQLEnum)]
+pub enum UpdateStatus {
+    ResourceUpdated,
+    NoUpdate,
+}
 
 pub struct Query;
 
@@ -74,8 +96,10 @@ impl Mutation {
     pub fn update_list(context: &GraphQLContext, input: String) -> FieldResult<String> {
         todo!()
     }
-    pub fn delete_list(context: &GraphQLContext, input: String) -> FieldResult<String> {
-        todo!()
+    pub fn delete_list(context: &GraphQLContext, list_id: Uuid) -> FieldResult<DeleteResult> {
+        let conn = &mut context.pool.get()?;
+        let res = list_service::delete_list(conn, list_id);
+        graphql_translate(res)
     }
 
     // LIST TAGS
@@ -97,11 +121,15 @@ impl Mutation {
         let res = item_service::create_item(conn, input);
         graphql_translate(res)
     }
-    pub fn update_item(context: &GraphQLContext, input: String) -> FieldResult<String> {
-        todo!()
+    pub fn update_item(context: &GraphQLContext, input: UpdateItem) -> FieldResult<UpdateResult> {
+        let conn = &mut context.pool.get()?;
+        let res = item_service::update_item(conn, input);
+        graphql_translate(res)
     }
-    pub fn delete_item(context: &GraphQLContext, input: String) -> FieldResult<String> {
-        todo!()
+    pub fn delete_item(context: &GraphQLContext, itemId: Uuid) -> FieldResult<DeleteResult> {
+        let conn = &mut context.pool.get()?;
+        let res = item_service::delete_item(conn, itemId);
+        graphql_translate(res)
     }
 
     // NOTIFICATION

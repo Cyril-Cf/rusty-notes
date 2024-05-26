@@ -18,7 +18,8 @@
     ],
     "types": [
       "node",
-      "vuetify"
+      "vuetify",
+      "vue3-toastify/global"
     ],
     "paths": {
       "@/*": [

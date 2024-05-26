@@ -1,3 +1,4 @@
+use crate::graphql_logic::graphql::{DeleteResult, DeleteStatus};
 use crate::models::item::Item;
 use crate::models::list::{CreateList, List, ListGraphQL, NewList};
 use crate::models::list_tag::ListTag;
@@ -81,7 +82,7 @@ pub fn find_one_with_items_and_tags(
         items: Vec::new(),
         user_id: list.user_id,
     };
-    enrich_list_with_relations(conn, &mut res, true, true);
+    enrich_list_with_relations(conn, &mut res, true, true)?;
     Ok(res)
 }
 
@@ -106,4 +107,22 @@ pub fn create_list(
         items: Vec::new(),
         tags: Vec::new(),
     })
+}
+
+pub fn delete_list(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    list_id: Uuid,
+) -> Result<DeleteResult, diesel::result::Error> {
+    diesel::delete(list_tags.filter(ListTagListId.eq(list_id))).execute(conn)?;
+    diesel::delete(items.filter(ItemListId.eq(list_id))).execute(conn)?;
+    let rows_deleted = diesel::delete(lists.filter(ListId.eq(list_id))).execute(conn)? as usize;
+    if rows_deleted > 0 {
+        Ok(DeleteResult {
+            status: DeleteStatus::ResourceDeleted,
+        })
+    } else {
+        Ok(DeleteResult {
+            status: DeleteStatus::NoDeletion,
+        })
+    }
 }

@@ -1,11 +1,10 @@
 import gql from 'graphql-tag'
 
-export const findOneWithItemsAndTags = gql`
-    query findOneWithItemsAndTags ($id: Uuid!) {
-        findOneWithItemsAndTags(listId: $id) {
+export const findAllListForUserWithTags = gql`
+    query findAllListForUserWithTags ($userId: Uuid!) {
+        findAllListForUserWithTags(userId: $userId) {
             id
             name
-            listType
             items {
                 name
             }

@@ -41,6 +41,21 @@ const routes = [
     ],
   },
   {
+    path: '/single_list/:listId',
+    component: () => import('@/layouts/default/Default.vue'),
+    children: [
+      {
+        path: '',
+        name: 'single_list',
+        component: () => import('@/views/SingleList.vue'),
+        meta: {
+          isAuthenticated: true,
+          // requiredRole: ['admin', 'user'],
+        },
+      },
+    ],
+  },
+  {
     path: '/subscription_more_infos/:redirectUri',
     component: () => import('@/layouts/default/Default.vue'),
     children: [
@@ -48,6 +63,36 @@ const routes = [
         path: '',
         name: 'subscription_more_infos',
         component: () => import('@/views/SubscriptionMoreInfos.vue'),
+        meta: {
+          isAuthenticated: true,
+          // requiredRole: ['admin', 'user'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/my_lists',
+    component: () => import('@/layouts/default/Default.vue'),
+    children: [
+      {
+        path: '',
+        name: 'my_lists',
+        component: () => import('@/views/MyLists.vue'),
+        meta: {
+          isAuthenticated: true,
+          // requiredRole: ['admin', 'user'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/add_list',
+    component: () => import('@/layouts/default/Default.vue'),
+    children: [
+      {
+        path: '',
+        name: 'add_list',
+        component: () => import('@/views/NewList.vue'),
         meta: {
           isAuthenticated: true,
           // requiredRole: ['admin', 'user'],

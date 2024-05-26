@@ -15,7 +15,7 @@ pub struct Item {
     pub item_type: ItemType,
 }
 
-#[derive(diesel_derive_enum::DbEnum, Debug, GraphQLEnum)]
+#[derive(diesel_derive_enum::DbEnum, Debug, GraphQLEnum, PartialEq)]
 #[ExistingTypePath = "crate::schema::sql_types::ItemType"]
 pub enum ItemType {
     #[db_rename = "CHECKBOX"]
@@ -24,7 +24,7 @@ pub enum ItemType {
     BulletPoint,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, AsChangeset)]
 #[diesel(table_name = items)]
 pub struct NewItem {
     pub id: Uuid,
@@ -36,6 +36,15 @@ pub struct NewItem {
 
 #[derive(GraphQLInputObject)]
 pub struct CreateItem {
+    pub name: String,
+    pub is_checked: bool,
+    pub list_id: Uuid,
+    pub item_type: ItemType,
+}
+
+#[derive(GraphQLInputObject)]
+pub struct UpdateItem {
+    pub id: Uuid,
     pub name: String,
     pub is_checked: bool,
     pub list_id: Uuid,

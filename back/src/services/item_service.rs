@@ -1,10 +1,18 @@
-use crate::models::item::{CreateItem, Item, NewItem};
-use crate::schema::items::dsl::items;
+use crate::graphql_logic::graphql::{DeleteResult, DeleteStatus, UpdateResult, UpdateStatus};
+use crate::models::item::{CreateItem, Item, NewItem, UpdateItem};
+use crate::schema::items::dsl::{id, items};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::r2d2::ConnectionManager;
 use diesel::r2d2::PooledConnection;
 use uuid::Uuid;
+
+fn find_one(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    item_id: Uuid,
+) -> Result<Item, diesel::result::Error> {
+    items.filter(id.eq(item_id)).first::<Item>(conn)
+}
 
 pub fn create_item(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
@@ -20,4 +28,49 @@ pub fn create_item(
     diesel::insert_into(items)
         .values(&new_item)
         .get_result::<Item>(conn)
+}
+
+pub fn delete_item(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    item_id: Uuid,
+) -> Result<DeleteResult, diesel::result::Error> {
+    let rows_deleted = diesel::delete(items.filter(id.eq(item_id))).execute(conn)? as usize;
+    if rows_deleted > 0 {
+        Ok(DeleteResult {
+            status: DeleteStatus::ResourceDeleted,
+        })
+    } else {
+        Ok(DeleteResult {
+            status: DeleteStatus::NoDeletion,
+        })
+    }
+}
+
+pub fn update_item(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    input: UpdateItem,
+) -> Result<UpdateResult, diesel::result::Error> {
+    let existing_item = find_one(conn, input.id)?;
+    if existing_item.name != input.name
+        || existing_item.is_checked != input.is_checked
+        || existing_item.item_type != input.item_type
+    {
+        let new_item = NewItem {
+            id: input.id,
+            name: input.name,
+            is_checked: input.is_checked,
+            list_id: input.list_id,
+            item_type: input.item_type,
+        };
+        diesel::update(items.filter(id.eq(input.id)))
+            .set(&new_item)
+            .execute(conn)?;
+        Ok(UpdateResult {
+            status: UpdateStatus::ResourceUpdated,
+        })
+    } else {
+        Ok(UpdateResult {
+            status: UpdateStatus::NoUpdate,
+        })
+    }
 }

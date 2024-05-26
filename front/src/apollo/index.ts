@@ -20,7 +20,7 @@ const authLink = setContext((_, { headers }) => {
 // HTTP connection to the API
 const httpLink = createHttpLink({
     // You should use an absolute URL here
-    uri: "http://localhost:8000/api/graphql",
+    uri: "http://localhost:8000/graphql",
 })
 
 // Cache implementation
