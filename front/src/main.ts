@@ -1,19 +1,10 @@
-/**
- * main.ts
- *
- * Bootstraps Vuetify and other plugins then mounts the App`
- */
-
-// Components
 import App from './App.vue'
-
-// Composables
+import { DefaultApolloClient } from '@vue/apollo-composable'
+import { apolloClient } from './apollo'
 import { createApp } from 'vue'
-
-// Plugins
 import { registerPlugins } from '@/plugins'
 
-const app = createApp(App)
+const app = createApp(App).provide(DefaultApolloClient, apolloClient)
 
 registerPlugins(app)
 

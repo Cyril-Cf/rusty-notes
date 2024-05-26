@@ -11,7 +11,7 @@ onMounted(async () => {
     if (auth.isAuthenticated()) {
       const token = await auth.bearerToken();
       const userStore = useUserStore();
-      await userStore.fetchUsers(token);
+      await userStore.fetchUsers(token!);
     }
   });
 });

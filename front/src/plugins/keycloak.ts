@@ -25,9 +25,12 @@ class Auth {
     await this.keycloak.login({
       redirectUri: (redirectUri)
     })
+    const accessToken = this.keycloak.token;
+    localStorage.setItem('accessToken', accessToken!);
   }
 
   public async logout(redirectUri?: string): Promise<void> {
+    localStorage.removeItem('accessToken');
     return this.keycloak.logout({
       redirectUri: redirectUri
     })
@@ -35,6 +38,8 @@ class Auth {
 
   public async bearerToken(): Promise<string | undefined> {
     await this.keycloak.updateToken(10)
+    const accessToken = this.keycloak.token;
+    localStorage.setItem('accessToken', accessToken!);
     return this.keycloak.token
   }
 
@@ -53,6 +58,10 @@ class Auth {
   public async userInfo(): Promise<KeycloakProfile | undefined> {
     await this.keycloak.loadUserProfile();
     return this.keycloak?.profile;
+  }
+
+  public userId(): string | undefined {
+    return this.keycloak.subject;
   }
 }
 
