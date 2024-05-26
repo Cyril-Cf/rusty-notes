@@ -25,12 +25,19 @@ class Auth {
     await this.keycloak.login({
       redirectUri: (redirectUri)
     })
+  }
+
+  public putTokenInLocalStorage() {
     const accessToken = this.keycloak.token;
     localStorage.setItem('accessToken', accessToken!);
   }
 
-  public async logout(redirectUri?: string): Promise<void> {
+  public removeTokenFromLocalStorage() {
     localStorage.removeItem('accessToken');
+  }
+
+  public async logout(redirectUri?: string): Promise<void> {
+    this.removeTokenFromLocalStorage()
     return this.keycloak.logout({
       redirectUri: redirectUri
     })
@@ -38,8 +45,6 @@ class Auth {
 
   public async bearerToken(): Promise<string | undefined> {
     await this.keycloak.updateToken(10)
-    const accessToken = this.keycloak.token;
-    localStorage.setItem('accessToken', accessToken!);
     return this.keycloak.token
   }
 
@@ -65,7 +70,6 @@ class Auth {
   }
 }
 
-// this is a lazy singleton:
 const instance: Promise<Auth> = (async () => {
   return await Auth.build()
 })()

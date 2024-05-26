@@ -41,6 +41,21 @@ const routes = [
     ],
   },
   {
+    path: '/subscription_more_infos/:redirectUri',
+    component: () => import('@/layouts/default/Default.vue'),
+    children: [
+      {
+        path: '',
+        name: 'subscription_more_infos',
+        component: () => import('@/views/SubscriptionMoreInfos.vue'),
+        meta: {
+          isAuthenticated: true,
+          // requiredRole: ['admin', 'user'],
+        },
+      },
+    ],
+  },
+  {
     path: '/admin_secure',
     component: () => import('@/layouts/default/Default.vue'),
     children: [
@@ -102,11 +117,14 @@ router.beforeEach((to, from, next) => {
     authPromise.then(async auth => {
       if (auth.isAuthenticated() && to.path !== '/unauthorized') {
         if (!to.meta?.requiredRole || to.meta?.requiredRole?.some(r => auth.userRoles().includes(r))) {
-          next()
+          auth.putTokenInLocalStorage();
+          next();
         } else {
+          auth.putTokenInLocalStorage();
           next('/unauthorized')
         }
       } else if (auth.isAuthenticated() && to.path === '/unauthorized') {
+        auth.putTokenInLocalStorage();
         next()
       } else {
         const redirect: RouteLocationRaw = { query: { ...to.query, 'sync_me': null } }

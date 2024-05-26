@@ -42,8 +42,11 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .app_data(web::Data::new(state.clone()))
-            .service(web::scope("api").wrap(keycloak_auth))
-            .configure(graphql_endpoints)
+            .service(
+                web::scope("api")
+                    .wrap(keycloak_auth)
+                    .configure(graphql_endpoints),
+            )
     })
     .bind("0.0.0.0:8000")?
     .run()

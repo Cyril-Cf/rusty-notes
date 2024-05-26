@@ -21,6 +21,14 @@ impl Query {
         let res = user_service::find_user(conn, user_id);
         graphql_translate(res)
     }
+    pub fn find_user_with_keycloak_id(
+        context: &GraphQLContext,
+        keycloak_id: Uuid,
+    ) -> FieldResult<Option<User>> {
+        let conn = &mut context.pool.get()?;
+        let res = user_service::find_user_with_keycloak_id(conn, keycloak_id);
+        graphql_translate(res)
+    }
 
     // LIST
     pub fn find_all_list_for_user_with_tags(

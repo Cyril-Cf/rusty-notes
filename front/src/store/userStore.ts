@@ -1,13 +1,14 @@
 import { ref } from 'vue'
-import { User } from '@/models/user'
 import { defineStore } from 'pinia'
 import { KeycloakProfile } from "keycloak-js";
 import { apolloClient } from '../apollo'
 import { findOneWithItemsAndTags } from '../graphql/queries/listTag.query';
+import { findUserWithKeycloakId } from '../graphql/queries/findUserWithKeycloakId.query';
+import { createUser } from '@/graphql/mutations/createUser.mutation';
+import { User, NewUser } from '../types/User'
 import { List } from '../types/List';
 
 export const useUserStore = defineStore('user', () => {
-  const URL_FRAGMENT = "users"
   const currentUser = ref<User | undefined>();
   const userFriends = ref<User[]>([]);
 
@@ -26,9 +27,29 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  function setCurrentUser(keycloak: KeycloakProfile) {
-    console.log(keycloak);
-    currentUser.value = new User("");
+  async function DoesUserExistInDB(keycloakId: String): Promise<boolean> {
+    const { data } = await apolloClient.query({
+      query: findUserWithKeycloakId,
+      variables: { keycloakId },
+      fetchPolicy: 'no-cache'
+    });
+    if (data && data.findUserWithKeycloakId) {
+      currentUser.value = data.findUserWithKeycloakId;
+      return true;
+    }
+    return false;
   }
-  return { userFriends, currentUser, fetchUsers }
+
+  async function createCurrentUser(input: NewUser) {
+    const { data } = await apolloClient.mutate({
+      mutation: createUser,
+      variables: { input },
+      fetchPolicy: 'no-cache'
+    });
+    if (data && data.createUser) {
+      currentUser.value = data.createUser;
+    }
+  }
+
+  return { userFriends, currentUser, fetchUsers, DoesUserExistInDB, createCurrentUser }
 })
