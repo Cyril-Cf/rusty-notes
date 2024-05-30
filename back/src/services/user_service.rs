@@ -7,6 +7,8 @@ use crate::schema::friendships::dsl::{
     friendships, is_validated, user_id as friendship_id_1, user_id2 as friendship_id_2,
 };
 use crate::schema::users::dsl::{email, id, keycloak_uuid, users};
+use crate::{NotificationServer, SendFriendshipNotification};
+use actix::Addr;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::r2d2::ConnectionManager;
@@ -81,12 +83,15 @@ pub fn add_friend_user(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     user_id: Uuid,
     user_email: String,
+    notification_server: &Addr<NotificationServer>,
 ) -> Result<AddFriendStatus, diesel::result::Error> {
     match find_user_with_email(conn, user_email)? {
         Some(user) => match does_friendship_exists(conn, user_id, user.id)? {
             FriendshipState::ExistsAndValidated => Ok(AddFriendStatus::ErrAlreadyFriend),
             FriendshipState::ExistsButNotValidate => Ok(AddFriendStatus::ErrAlreadyPendingDemand),
-            FriendshipState::DoesNotExist => add_friendship(conn, user_id, user.id),
+            FriendshipState::DoesNotExist => {
+                add_friendship(conn, user_id, user.id, notification_server)
+            }
         },
         None => Ok(AddFriendStatus::ErrNoUserId),
     }
@@ -96,6 +101,7 @@ fn add_friendship(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     user_id: Uuid,
     user_friend_id: Uuid,
+    notification_server: &Addr<NotificationServer>,
 ) -> Result<AddFriendStatus, diesel::result::Error> {
     let friendship = NewFriendship {
         id: Uuid::new_v4(),
@@ -106,6 +112,10 @@ fn add_friendship(
     diesel::insert_into(friendships)
         .values(&friendship)
         .execute(conn)?;
+    notification_server.do_send(SendFriendshipNotification {
+        user_id: user_friend_id,
+        message: "Vous avez un nouvel ami!".to_owned(),
+    });
     Ok(AddFriendStatus::AddSuccessful)
 }
 

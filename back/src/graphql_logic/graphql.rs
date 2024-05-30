@@ -103,7 +103,8 @@ impl Mutation {
         user_email: String,
     ) -> FieldResult<AddFriendStatus> {
         let conn = &mut context.pool.get()?;
-        let res = user_service::add_friend_user(conn, user_id, user_email);
+        let res =
+            user_service::add_friend_user(conn, user_id, user_email, &context.notification_server);
         graphql_translate(res)
     }
     pub fn remove_user_friend(
