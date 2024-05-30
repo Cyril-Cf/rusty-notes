@@ -1,4 +1,7 @@
 use super::context::GraphQLContext;
+use crate::models::friendship::{
+    AddFriendStatus, FriendshipAcceptingStatus, FriendshipGraphQL, RemoveFriendStatus,
+};
 use crate::models::item::{CreateItem, Item, UpdateItem};
 use crate::models::list::{CreateList, ListGraphQL};
 use crate::models::list_tag::{CreateListTag, ListTag};
@@ -38,7 +41,7 @@ pub struct Query;
 #[juniper::graphql_object(Context = GraphQLContext)]
 impl Query {
     // USER
-    pub fn find_user(context: &GraphQLContext, user_id: Uuid) -> FieldResult<User> {
+    pub fn find_user(context: &GraphQLContext, user_id: Uuid) -> FieldResult<Option<User>> {
         let conn = &mut context.pool.get()?;
         let res = user_service::find_user(conn, user_id);
         graphql_translate(res)
@@ -49,6 +52,14 @@ impl Query {
     ) -> FieldResult<Option<User>> {
         let conn = &mut context.pool.get()?;
         let res = user_service::find_user_with_keycloak_id(conn, keycloak_id);
+        graphql_translate(res)
+    }
+    pub fn get_user_friends(
+        context: &GraphQLContext,
+        user_id: Uuid,
+    ) -> FieldResult<Vec<FriendshipGraphQL>> {
+        let conn = &mut context.pool.get()?;
+        let res = user_service::get_user_friendships(conn, user_id);
         graphql_translate(res)
     }
 
@@ -84,6 +95,33 @@ impl Mutation {
     pub fn update_user(context: &GraphQLContext, input: ModifyUser) -> FieldResult<User> {
         let conn = &mut context.pool.get()?;
         let res = user_service::update_user(conn, input);
+        graphql_translate(res)
+    }
+    pub fn add_user_friend(
+        context: &GraphQLContext,
+        user_id: Uuid,
+        user_email: String,
+    ) -> FieldResult<AddFriendStatus> {
+        let conn = &mut context.pool.get()?;
+        let res = user_service::add_friend_user(conn, user_id, user_email);
+        graphql_translate(res)
+    }
+    pub fn remove_user_friend(
+        context: &GraphQLContext,
+        user_id: Uuid,
+        user_friend_id: Uuid,
+    ) -> FieldResult<RemoveFriendStatus> {
+        let conn = &mut context.pool.get()?;
+        let res = user_service::remove_user_friend(conn, user_id, user_friend_id);
+        graphql_translate(res)
+    }
+    pub fn confirm_friendship(
+        context: &GraphQLContext,
+        user_asked_id: Uuid,
+        user_asking_id: Uuid,
+    ) -> FieldResult<FriendshipAcceptingStatus> {
+        let conn = &mut context.pool.get()?;
+        let res = user_service::confirm_friendship(conn, user_asked_id, user_asking_id);
         graphql_translate(res)
     }
 

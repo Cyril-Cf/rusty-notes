@@ -1,12 +1,12 @@
-// use diesel::pg::PgConnection;
 use diesel::prelude::*;
-// use diesel::sql_types::Uuid as DieselUuid;
-use juniper::GraphQLObject;
+use juniper::{GraphQLEnum, GraphQLObject};
 use uuid::Uuid;
 
 use crate::schema::friendships;
 
-#[derive(Queryable, Insertable, Identifiable, Associations, Debug, GraphQLObject)]
+use super::user::User;
+
+#[derive(Queryable, AsChangeset, Identifiable, Associations, Debug, GraphQLObject)]
 #[diesel(table_name = friendships)]
 #[diesel(belongs_to(super::user::User))]
 #[diesel(primary_key(user_id, user_id2))]
@@ -15,11 +15,49 @@ pub struct Friendship {
     pub id: Uuid,
     pub user_id: Uuid,
     pub user_id2: Uuid,
+    pub is_validated: bool,
 }
 
-#[derive(AsChangeset)]
+#[derive(Insertable)]
 #[diesel(table_name = friendships)]
-pub struct FriendshipChangeset {
-    pub user_id: Option<Uuid>,
-    pub user_id2: Option<Uuid>,
+pub struct NewFriendship {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub user_id2: Uuid,
+    pub is_validated: bool,
+}
+
+#[derive(Debug, GraphQLObject)]
+#[graphql(description = "A friendship")]
+pub struct FriendshipGraphQL {
+    pub id: Uuid,
+    pub is_validated: bool,
+    pub friend: User,
+}
+
+#[derive(Debug, GraphQLEnum)]
+pub enum AddFriendStatus {
+    AddSuccessful,
+    ErrNoUserId,
+    ErrAlreadyFriend,
+    ErrAlreadyPendingDemand,
+    NotFriendsYet,
+}
+
+#[derive(Debug, GraphQLEnum)]
+pub enum RemoveFriendStatus {
+    RemoveSuccessful,
+    ErrNoFriendship,
+}
+
+pub enum FriendshipState {
+    ExistsAndValidated,
+    ExistsButNotValidate,
+    DoesNotExist,
+}
+
+#[derive(Debug, GraphQLEnum)]
+pub enum FriendshipAcceptingStatus {
+    AcceptingSuccessful,
+    ErrCannotAccept,
 }

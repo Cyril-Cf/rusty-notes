@@ -19,6 +19,7 @@ diesel::table! {
         id -> Uuid,
         user_id -> Uuid,
         user_id2 -> Uuid,
+        is_validated -> Bool,
     }
 }
 
