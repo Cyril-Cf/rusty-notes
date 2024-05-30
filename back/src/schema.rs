@@ -17,8 +17,8 @@ pub mod sql_types {
 diesel::table! {
     friendships (id) {
         id -> Uuid,
-        user_id -> Uuid,
-        user_id2 -> Uuid,
+        user_who_asked_id -> Uuid,
+        user_who_got_asked_id -> Uuid,
         is_validated -> Bool,
     }
 }

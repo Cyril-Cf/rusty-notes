@@ -4,7 +4,8 @@ use crate::models::friendship::{
 };
 use crate::models::user::{CreateUser, ModifyUser, NewUser, User, UserChangeset};
 use crate::schema::friendships::dsl::{
-    friendships, is_validated, user_id as friendship_id_1, user_id2 as friendship_id_2,
+    friendships, is_validated, user_who_asked_id as friendship_id_1,
+    user_who_got_asked_id as friendship_id_2,
 };
 use crate::schema::users::dsl::{email, id, keycloak_uuid, users};
 use crate::{NotificationServer, SendFriendshipNotification};
@@ -105,8 +106,8 @@ fn add_friendship(
 ) -> Result<AddFriendStatus, diesel::result::Error> {
     let friendship = NewFriendship {
         id: Uuid::new_v4(),
-        user_id,
-        user_id2: user_friend_id,
+        user_who_asked_id: user_id,
+        user_who_got_asked_id: user_friend_id,
         is_validated: false,
     };
     diesel::insert_into(friendships)
@@ -156,8 +157,8 @@ pub fn get_user_friendships(
         .filter((friendship_id_1.eq(user_id)).or(friendship_id_1.eq(user_id)))
         .load(conn)?;
     for friendship in all_friendships {
-        let friend = if friendship.user_id == user_id {
-            find_user(conn, friendship.user_id2)?.unwrap()
+        let friend = if friendship.user_who_asked_id == user_id {
+            find_user(conn, friendship.user_who_got_asked_id)?.unwrap()
         } else {
             find_user(conn, user_id)?.unwrap()
         };

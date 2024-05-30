@@ -6,15 +6,14 @@ use crate::schema::friendships;
 
 use super::user::User;
 
-#[derive(Queryable, AsChangeset, Identifiable, Associations, Debug, GraphQLObject)]
+#[derive(Queryable, AsChangeset, Identifiable, Debug, GraphQLObject)]
 #[diesel(table_name = friendships)]
-#[diesel(belongs_to(super::user::User))]
-#[diesel(primary_key(user_id, user_id2))]
+#[diesel(primary_key(user_who_asked_id, user_who_got_asked_id))]
 #[graphql(description = "A friendship between two users")]
 pub struct Friendship {
     pub id: Uuid,
-    pub user_id: Uuid,
-    pub user_id2: Uuid,
+    pub user_who_asked_id: Uuid,
+    pub user_who_got_asked_id: Uuid,
     pub is_validated: bool,
 }
 
@@ -22,8 +21,8 @@ pub struct Friendship {
 #[diesel(table_name = friendships)]
 pub struct NewFriendship {
     pub id: Uuid,
-    pub user_id: Uuid,
-    pub user_id2: Uuid,
+    pub user_who_asked_id: Uuid,
+    pub user_who_got_asked_id: Uuid,
     pub is_validated: bool,
 }
 
