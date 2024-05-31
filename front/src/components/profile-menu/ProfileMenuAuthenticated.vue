@@ -54,11 +54,11 @@ const gravatarImage = computed(() => {
   if (userStore.currentUser) {
     return "https://www.gravatar.com/avatar/" +
       Md5.hashStr(userStore.currentUser.email.valueOf()) +
-      "?s=32&d=retro";
+      "?s=48&d=wavatar";
   } else {
     return "https://www.gravatar.com/avatar/" +
       Md5.hashStr("test.test.fr") +
-      "?s=32&d=retro";
+      "?s=48&d=wavatar";
   }
 });
 

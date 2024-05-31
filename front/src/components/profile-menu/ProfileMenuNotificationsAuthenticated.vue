@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-menu min-width="300px" rounded>
+        <v-menu min-width="400px" max-width="400px" rounded>
             <template v-slot:activator="{ props }">
                 <v-btn icon v-bind="props">
                     <v-badge :content="unreadNotificationsCount" color="red">
@@ -8,21 +8,32 @@
                     </v-badge>
                 </v-btn>
             </template>
-            <v-card class="px-5">
-                <v-card-text>
-                    <div class="mx-auto text-center">
-                        <h3>Notifications</h3>
-                        <v-list dense>
-                            <v-list-item v-for="notification in notifications" :key="notification.id">
-                                <v-list-item-title>
+            <v-card>
+                <v-card-text class="p-0">
+                    <div class="text-center">
+                        <h3 class="py-3">Notifications</h3>
+                        <v-divider></v-divider>
+                        <v-list dense max-height="200px" min-width="350px" class="overflow-y-auto">
+                            <v-list-item v-for="notification in sortedNotifications" :key="notification.id">
+                                <template v-slot:prepend>
+                                    <v-avatar size="small" :color="getIconColor(notification)">
+                                        <v-icon color="white">{{ getIconImage(notification) }}</v-icon>
+                                    </v-avatar>
+                                </template>
+                                <v-list-item-title class="single-line">
                                     {{ getNotificationMessage(notification) }}
                                 </v-list-item-title>
-                                <v-list-item-action>
-                                    <v-btn v-if="!notification.hasBeenRead" small color="primary"
-                                        @click="markAsRead(notification)">
-                                        Mark as Read
-                                    </v-btn>
-                                </v-list-item-action>
+                                <template v-slot:append v-if="!notification.hasBeenRead">
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ props }">
+                                            <v-btn icon elevation="0" size="x-small" color="primary"
+                                                @click="markAsRead(notification)" v-bind="props">
+                                                <v-icon>mdi-check</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <span>Mark as Read</span>
+                                    </v-tooltip>
+                                </template>
                             </v-list-item>
                         </v-list>
                     </div>
@@ -44,6 +55,10 @@ const userStore = useUserStore();
 
 const notifications = computed(() => notificationStore.notifications);
 
+const sortedNotifications = computed(() => {
+    return notifications.value.reverse();
+});
+
 const unreadNotificationsCount = computed(() => {
     return notifications.value.filter((notif) => !notif.hasBeenRead).length;
 });
@@ -61,9 +76,43 @@ const getNotificationMessage = (notification: Notification) => {
     }
 };
 
+const getIconColor = (notification: Notification) => {
+    switch (notification.notifType) {
+        case NotifType.NEW_FRIENDSHIP_DEMAND:
+            return "pink";
+        case NotifType.NEW_FRIENDSHIP_ACCEPTED:
+            return "green";
+        case NotifType.SHARED_LIST_MODIFIED:
+            return "yellow";
+        default:
+            return "Unknown notification";
+    }
+}
+
+const getIconImage = (notification: Notification) => {
+    switch (notification.notifType) {
+        case NotifType.NEW_FRIENDSHIP_DEMAND:
+            return "mdi-heart-box";
+        case NotifType.NEW_FRIENDSHIP_ACCEPTED:
+            return "mdi-heart-plus";
+        case NotifType.SHARED_LIST_MODIFIED:
+            return "mdi-playlist-edit";
+        default:
+            return "Unknown notification";
+    }
+}
+
 const markAsRead = async (notification: Notification) => {
-    const updateNotification: Notification = { id: notification.id, hasBeenRead: true, notifType: notification.notifType, userId: notification.userId };
-    await notificationStore.updateNotificationBool(updateNotification, userStore.currentUser!.id);
+    const updateNotification: Notification = {
+        id: notification.id,
+        hasBeenRead: true,
+        notifType: notification.notifType,
+        userId: notification.userId,
+    };
+    await notificationStore.updateNotificationBool(
+        updateNotification,
+        userStore.currentUser!.id
+    );
 };
 
 onMounted(async () => {
@@ -84,5 +133,11 @@ onMounted(async () => {
 .v-badge {
     display: inline-block;
     margin-right: 12px;
+}
+
+.single-line {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 </style>
