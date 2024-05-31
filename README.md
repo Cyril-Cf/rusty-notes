@@ -1,6 +1,6 @@
 # rusty-notes
 
-WIP -  toy project (Actix web - Vue.js - Keycloak - GraphQL)
+WIP -  toy project (Actix web - Vue.js - Keycloak - GraphQL - WebSocket)
 The aim is to have a todo list that's self-hosted with a social aspect (joined notes between users)
 
 Setup to self-host :
