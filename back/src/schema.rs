@@ -10,8 +10,8 @@ pub mod sql_types {
     pub struct ListType;
 
     #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
-    #[diesel(postgres_type(name = "notification_type"))]
-    pub struct NotificationType;
+    #[diesel(postgres_type(name = "notif_type"))]
+    pub struct NotifType;
 }
 
 diesel::table! {
@@ -58,13 +58,12 @@ diesel::table! {
 
 diesel::table! {
     use diesel::sql_types::*;
-    use super::sql_types::NotificationType;
+    use super::sql_types::NotifType;
 
     notifications (id) {
         id -> Uuid,
-        content -> Varchar,
         has_been_read -> Bool,
-        notification_type -> NotificationType,
+        notif_type -> NotifType,
         user_id -> Uuid,
     }
 }

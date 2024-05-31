@@ -5,10 +5,13 @@ use crate::models::friendship::{
 use crate::models::item::{CreateItem, Item, UpdateItem};
 use crate::models::list::{CreateList, ListGraphQL};
 use crate::models::list_tag::{CreateListTag, ListTag};
+use crate::models::notification::{CreateNotification, Notification, UpdateNotificationGQL};
 use crate::models::user::{CreateUser, ModifyUser, User};
+use crate::services::friendship_service;
 use crate::services::item_service;
 use crate::services::list_service;
 use crate::services::list_tag_service;
+use crate::services::notification_service;
 use crate::services::user_service;
 use juniper::FieldError;
 use juniper::{EmptySubscription, FieldResult, GraphQLEnum, GraphQLObject, RootNode};
@@ -74,7 +77,7 @@ impl Query {
         user_id: Uuid,
     ) -> FieldResult<Vec<FriendshipGraphQL>> {
         let conn = &mut context.pool.get()?;
-        let res = user_service::get_user_friendships(conn, user_id);
+        let res = friendship_service::get_user_friendships(conn, user_id);
         graphql_translate(res)
     }
 
@@ -90,9 +93,19 @@ impl Query {
     pub fn find_one_with_items_and_tags(
         context: &GraphQLContext,
         list_id: Uuid,
-    ) -> FieldResult<ListGraphQL> {
+    ) -> FieldResult<Option<ListGraphQL>> {
         let conn = &mut context.pool.get()?;
         let res = list_service::find_one_with_items_and_tags(conn, list_id);
+        graphql_translate(res)
+    }
+
+    // NOTIFICATION
+    pub fn find_all_notifications_for_user(
+        context: &GraphQLContext,
+        user_id: Uuid,
+    ) -> FieldResult<Vec<Notification>> {
+        let conn = &mut context.pool.get()?;
+        let res = notification_service::find_all_notifications_for_user(conn, user_id);
         graphql_translate(res)
     }
 }
@@ -118,12 +131,13 @@ impl Mutation {
         user_who_get_asked_email: String,
     ) -> FieldResult<AddFriendshipResult> {
         let conn = &mut context.pool.get()?;
-        let res: Result<AddFriendshipResult, diesel::result::Error> = user_service::add_friend_user(
-            conn,
-            user_who_asked_id,
-            user_who_get_asked_email,
-            &context.notification_server,
-        );
+        let res: Result<AddFriendshipResult, diesel::result::Error> =
+            friendship_service::add_friend_user(
+                conn,
+                user_who_asked_id,
+                user_who_get_asked_email,
+                &context.notification_server,
+            );
         graphql_translate(res)
     }
     pub fn remove_user_friend(
@@ -132,7 +146,7 @@ impl Mutation {
         user_friend_id: Uuid,
     ) -> FieldResult<RemoveFriendshipResult> {
         let conn = &mut context.pool.get()?;
-        let res = user_service::remove_user_friend(
+        let res = friendship_service::remove_user_friend(
             conn,
             user_id,
             user_friend_id,
@@ -146,7 +160,7 @@ impl Mutation {
         user_asking_id: Uuid,
     ) -> FieldResult<AcceptFriendshipResult> {
         let conn = &mut context.pool.get()?;
-        let res = user_service::confirm_friendship(
+        let res = friendship_service::confirm_friendship(
             conn,
             user_asked_id,
             user_asking_id,
@@ -161,9 +175,9 @@ impl Mutation {
         let res = list_service::create_list(conn, input);
         graphql_translate(res)
     }
-    pub fn update_list(context: &GraphQLContext, input: String) -> FieldResult<String> {
-        todo!()
-    }
+    // pub fn update_list(context: &GraphQLContext, input: String) -> FieldResult<String> {
+    //     todo!()
+    // }
     pub fn delete_list(context: &GraphQLContext, list_id: Uuid) -> FieldResult<DeleteResult> {
         let conn = &mut context.pool.get()?;
         let res = list_service::delete_list(conn, list_id);
@@ -176,12 +190,12 @@ impl Mutation {
         let res = list_tag_service::create_list_tag(conn, input);
         graphql_translate(res)
     }
-    pub fn update_list_tag(context: &GraphQLContext, input: String) -> FieldResult<String> {
-        todo!()
-    }
-    pub fn delete_list_tag(context: &GraphQLContext, input: String) -> FieldResult<String> {
-        todo!()
-    }
+    // pub fn update_list_tag(context: &GraphQLContext, input: String) -> FieldResult<String> {
+    //     todo!()
+    // }
+    // pub fn delete_list_tag(context: &GraphQLContext, input: String) -> FieldResult<String> {
+    //     todo!()
+    // }
 
     // ITEM
     pub fn create_item(context: &GraphQLContext, input: CreateItem) -> FieldResult<Item> {
@@ -194,21 +208,28 @@ impl Mutation {
         let res = item_service::update_item(conn, input);
         graphql_translate(res)
     }
-    pub fn delete_item(context: &GraphQLContext, itemId: Uuid) -> FieldResult<DeleteResult> {
+    pub fn delete_item(context: &GraphQLContext, item_id: Uuid) -> FieldResult<DeleteResult> {
         let conn = &mut context.pool.get()?;
-        let res = item_service::delete_item(conn, itemId);
+        let res = item_service::delete_item(conn, item_id);
         graphql_translate(res)
     }
 
     // NOTIFICATION
-    pub fn create_notification(context: &GraphQLContext, input: String) -> FieldResult<String> {
-        todo!()
+    pub fn create_notification(
+        context: &GraphQLContext,
+        input: CreateNotification,
+    ) -> FieldResult<Notification> {
+        let conn = &mut context.pool.get()?;
+        let res = notification_service::create_notification(conn, input);
+        graphql_translate(res)
     }
-    pub fn update_notification(context: &GraphQLContext, input: String) -> FieldResult<String> {
-        todo!()
-    }
-    pub fn delete_notification(context: &GraphQLContext, input: String) -> FieldResult<String> {
-        todo!()
+    pub fn update_notification(
+        context: &GraphQLContext,
+        input: UpdateNotificationGQL,
+    ) -> FieldResult<UpdateResult> {
+        let conn = &mut context.pool.get()?;
+        let res = notification_service::update_notification(conn, input);
+        graphql_translate(res)
     }
 }
 

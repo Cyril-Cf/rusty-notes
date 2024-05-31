@@ -7,11 +7,14 @@ use diesel::r2d2::ConnectionManager;
 use diesel::r2d2::PooledConnection;
 use uuid::Uuid;
 
-fn find_one(
+pub fn find_one(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
-    item_id: Uuid,
-) -> Result<Item, diesel::result::Error> {
-    items.filter(id.eq(item_id)).first::<Item>(conn)
+    user_id: Uuid,
+) -> Result<Option<Item>, diesel::result::Error> {
+    match items.filter(id.eq(user_id)).first::<Item>(conn) {
+        Ok(item) => Ok(Some(item)),
+        Err(_) => Ok(None),
+    }
 }
 
 pub fn create_item(
@@ -51,6 +54,12 @@ pub fn update_item(
     input: UpdateItem,
 ) -> Result<UpdateResult, diesel::result::Error> {
     let existing_item = find_one(conn, input.id)?;
+    if existing_item.is_none() {
+        return Ok(UpdateResult {
+            status: UpdateStatus::NoUpdate,
+        });
+    }
+    let existing_item = existing_item.unwrap();
     if existing_item.name != input.name
         || existing_item.is_checked != input.is_checked
         || existing_item.item_type != input.item_type

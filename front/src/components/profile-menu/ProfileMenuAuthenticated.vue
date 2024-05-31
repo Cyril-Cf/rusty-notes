@@ -28,6 +28,7 @@ import { computed, onMounted, onUnmounted } from "vue";
 import { Md5 } from "ts-md5";
 import authPromise from "@/plugins/keycloak";
 import { useUserStore } from "@/store/userStore";
+import { useNotificationStore } from "@/store/notificationStore";
 import { WebSocketMessage } from "@/types/WebSocketMessage";
 
 const userStore = useUserStore();
@@ -73,11 +74,13 @@ onMounted(async () => {
   authPromise.then(async (auth) => {
     if (auth.isAuthenticated()) {
       const userStore = useUserStore();
+      const notificationStore = useNotificationStore();
       let userIsInDB = await userStore.DoesUserExistInDB(auth.userId()!);
       if (userIsInDB && userStore.currentUser) {
         let userId = userStore.currentUser.id;
         ws = new WebSocket(`${import.meta.env.VITE_BACK_WS_URL}${userId}`);
         ws.onmessage = async (event) => {
+          await notificationStore.fetchNotifications(userId);
           let message: WebSocketMessage = event.data;
           if (message == WebSocketMessage.RefreshFriendships) {
             await userStore.getFriendships(userStore.currentUser!.id);

@@ -1,8 +1,7 @@
+use crate::schema::items;
 use diesel::prelude::*;
 use juniper::{GraphQLEnum, GraphQLInputObject, GraphQLObject};
 use uuid::Uuid;
-
-use crate::schema::items;
 
 #[derive(Queryable, Insertable, Identifiable, Associations, Debug, GraphQLObject)]
 #[diesel(belongs_to(super::list::List))]

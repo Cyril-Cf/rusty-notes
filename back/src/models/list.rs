@@ -39,8 +39,10 @@ pub struct ListGraphQL {
 #[derive(AsChangeset)]
 #[diesel(table_name = lists)]
 pub struct ListChangeset {
+    pub id: Option<Uuid>,
     pub name: Option<String>,
     pub list_type: Option<ListType>,
+    pub user_id: Option<Uuid>,
 }
 
 #[derive(Insertable)]

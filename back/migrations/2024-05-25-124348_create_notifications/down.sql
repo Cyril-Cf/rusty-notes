@@ -1,2 +1,2 @@
 DROP TABLE notifications;
-DROP TYPE notification_type;
+DROP TYPE notif_type;
