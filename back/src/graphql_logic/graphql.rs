@@ -30,6 +30,21 @@ pub struct UpdateResult {
     pub status: UpdateStatus,
 }
 
+#[derive(Debug, GraphQLObject)]
+pub struct AddFriendshipResult {
+    pub status: AddFriendStatus,
+}
+
+#[derive(Debug, GraphQLObject)]
+pub struct RemoveFriendshipResult {
+    pub status: RemoveFriendStatus,
+}
+
+#[derive(Debug, GraphQLObject)]
+pub struct AcceptFriendshipResult {
+    pub status: FriendshipAcceptingStatus,
+}
+
 #[derive(Debug, GraphQLEnum)]
 pub enum UpdateStatus {
     ResourceUpdated,
@@ -54,7 +69,7 @@ impl Query {
         let res = user_service::find_user_with_keycloak_id(conn, keycloak_id);
         graphql_translate(res)
     }
-    pub fn get_user_friends(
+    pub fn get_user_friendships(
         context: &GraphQLContext,
         user_id: Uuid,
     ) -> FieldResult<Vec<FriendshipGraphQL>> {
@@ -99,19 +114,23 @@ impl Mutation {
     }
     pub fn add_user_friend(
         context: &GraphQLContext,
-        user_id: Uuid,
-        user_email: String,
-    ) -> FieldResult<AddFriendStatus> {
+        user_who_asked_id: Uuid,
+        user_who_get_asked_email: String,
+    ) -> FieldResult<AddFriendshipResult> {
         let conn = &mut context.pool.get()?;
-        let res =
-            user_service::add_friend_user(conn, user_id, user_email, &context.notification_server);
+        let res: Result<AddFriendshipResult, diesel::result::Error> = user_service::add_friend_user(
+            conn,
+            user_who_asked_id,
+            user_who_get_asked_email,
+            &context.notification_server,
+        );
         graphql_translate(res)
     }
     pub fn remove_user_friend(
         context: &GraphQLContext,
         user_id: Uuid,
         user_friend_id: Uuid,
-    ) -> FieldResult<RemoveFriendStatus> {
+    ) -> FieldResult<RemoveFriendshipResult> {
         let conn = &mut context.pool.get()?;
         let res = user_service::remove_user_friend(conn, user_id, user_friend_id);
         graphql_translate(res)
@@ -120,7 +139,7 @@ impl Mutation {
         context: &GraphQLContext,
         user_asked_id: Uuid,
         user_asking_id: Uuid,
-    ) -> FieldResult<FriendshipAcceptingStatus> {
+    ) -> FieldResult<AcceptFriendshipResult> {
         let conn = &mut context.pool.get()?;
         let res = user_service::confirm_friendship(conn, user_asked_id, user_asking_id);
         graphql_translate(res)

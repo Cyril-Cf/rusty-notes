@@ -13,6 +13,8 @@
         <v-list-item prepend-icon="mdi-home-outline" title="Home" value="home" to="/"></v-list-item>
         <v-list-item prepend-icon="mdi-view-list-outline" title="Mes listes" value="my_lists"
           to="/my_lists"></v-list-item>
+        <v-list-item prepend-icon="mdi-account-heart-outline" title="Mes amis" value="my_friends"
+          to="/my_friends"></v-list-item>
       </v-list>
     </v-navigation-drawer>
 

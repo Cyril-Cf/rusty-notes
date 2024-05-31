@@ -230,11 +230,8 @@ async fn main() -> std::io::Result<()> {
             .wrap(cors)
             .app_data(web::Data::new(state.clone()))
             .app_data(web::Data::new(notification_server.clone()))
-            .service(
-                web::scope("api")
-                    .wrap(keycloak_auth)
-                    .configure(graphql_endpoints),
-            )
+            .service(web::scope("api").wrap(keycloak_auth))
+            .configure(graphql_endpoints)
             .route("/ws/{user_id}", web::get().to(ws_handler))
     })
     .bind("0.0.0.0:8000")?

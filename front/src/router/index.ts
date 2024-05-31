@@ -15,32 +15,6 @@ const routes = [
     ],
   },
   {
-    path: '/unsecure',
-    component: () => import('@/layouts/default/Default.vue'),
-    children: [
-      {
-        path: '',
-        name: 'unsecure',
-        component: () => import('@/views/UnSecure.vue'),
-      },
-    ],
-  },
-  {
-    path: '/user_secure',
-    component: () => import('@/layouts/default/Default.vue'),
-    children: [
-      {
-        path: '',
-        name: 'user-secure',
-        component: () => import('@/views/UserSecure.vue'),
-        meta: {
-          isAuthenticated: true,
-          // requiredRole: ['admin', 'user'],
-        },
-      },
-    ],
-  },
-  {
     path: '/single_list/:listId',
     component: () => import('@/layouts/default/Default.vue'),
     children: [
@@ -78,6 +52,21 @@ const routes = [
         path: '',
         name: 'my_lists',
         component: () => import('@/views/MyLists.vue'),
+        meta: {
+          isAuthenticated: true,
+          // requiredRole: ['admin', 'user'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/my_friends',
+    component: () => import('@/layouts/default/Default.vue'),
+    children: [
+      {
+        path: '',
+        name: 'my_lists',
+        component: () => import('@/views/MyFriends.vue'),
         meta: {
           isAuthenticated: true,
           // requiredRole: ['admin', 'user'],

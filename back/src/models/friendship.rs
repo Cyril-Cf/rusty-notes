@@ -31,16 +31,16 @@ pub struct NewFriendship {
 pub struct FriendshipGraphQL {
     pub id: Uuid,
     pub is_validated: bool,
-    pub friend: User,
+    pub friend_who_asked: User,
+    pub friend_who_got_asked: User,
 }
 
 #[derive(Debug, GraphQLEnum)]
 pub enum AddFriendStatus {
     AddSuccessful,
-    ErrNoUserId,
+    ErrNoUserEmail,
     ErrAlreadyFriend,
     ErrAlreadyPendingDemand,
-    NotFriendsYet,
 }
 
 #[derive(Debug, GraphQLEnum)]

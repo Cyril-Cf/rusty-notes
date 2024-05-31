@@ -1,3 +1,6 @@
+use crate::graphql_logic::graphql::{
+    AcceptFriendshipResult, AddFriendshipResult, RemoveFriendshipResult,
+};
 use crate::models::friendship::{
     AddFriendStatus, Friendship, FriendshipAcceptingStatus, FriendshipGraphQL, FriendshipState,
     NewFriendship, RemoveFriendStatus,
@@ -85,16 +88,22 @@ pub fn add_friend_user(
     user_id: Uuid,
     user_email: String,
     notification_server: &Addr<NotificationServer>,
-) -> Result<AddFriendStatus, diesel::result::Error> {
+) -> Result<AddFriendshipResult, diesel::result::Error> {
     match find_user_with_email(conn, user_email)? {
         Some(user) => match does_friendship_exists(conn, user_id, user.id)? {
-            FriendshipState::ExistsAndValidated => Ok(AddFriendStatus::ErrAlreadyFriend),
-            FriendshipState::ExistsButNotValidate => Ok(AddFriendStatus::ErrAlreadyPendingDemand),
+            FriendshipState::ExistsAndValidated => Ok(AddFriendshipResult {
+                status: AddFriendStatus::ErrAlreadyFriend,
+            }),
+            FriendshipState::ExistsButNotValidate => Ok(AddFriendshipResult {
+                status: AddFriendStatus::ErrAlreadyPendingDemand,
+            }),
             FriendshipState::DoesNotExist => {
                 add_friendship(conn, user_id, user.id, notification_server)
             }
         },
-        None => Ok(AddFriendStatus::ErrNoUserId),
+        None => Ok(AddFriendshipResult {
+            status: AddFriendStatus::ErrNoUserEmail,
+        }),
     }
 }
 
@@ -103,7 +112,7 @@ fn add_friendship(
     user_id: Uuid,
     user_friend_id: Uuid,
     notification_server: &Addr<NotificationServer>,
-) -> Result<AddFriendStatus, diesel::result::Error> {
+) -> Result<AddFriendshipResult, diesel::result::Error> {
     let friendship = NewFriendship {
         id: Uuid::new_v4(),
         user_who_asked_id: user_id,
@@ -117,7 +126,9 @@ fn add_friendship(
         user_id: user_friend_id,
         message: "Vous avez un nouvel ami!".to_owned(),
     });
-    Ok(AddFriendStatus::AddSuccessful)
+    Ok(AddFriendshipResult {
+        status: AddFriendStatus::AddSuccessful,
+    })
 }
 
 fn does_friendship_exists(
@@ -131,8 +142,8 @@ fn does_friendship_exists(
                 .eq(user_id)
                 .and(friendship_id_2.eq(user_friend_id)))
             .or(friendship_id_1
-                .eq(user_id)
-                .and(friendship_id_2.eq(user_friend_id))),
+                .eq(user_friend_id)
+                .and(friendship_id_2.eq(user_id))),
         )
         .first(conn)
         .optional()?;
@@ -154,18 +165,14 @@ pub fn get_user_friendships(
 ) -> Result<Vec<FriendshipGraphQL>, diesel::result::Error> {
     let mut res = Vec::new();
     let all_friendships: Vec<Friendship> = friendships
-        .filter((friendship_id_1.eq(user_id)).or(friendship_id_1.eq(user_id)))
+        .filter((friendship_id_1.eq(user_id)).or(friendship_id_2.eq(user_id)))
         .load(conn)?;
     for friendship in all_friendships {
-        let friend = if friendship.user_who_asked_id == user_id {
-            find_user(conn, friendship.user_who_got_asked_id)?.unwrap()
-        } else {
-            find_user(conn, user_id)?.unwrap()
-        };
         res.push(FriendshipGraphQL {
             id: friendship.id,
             is_validated: friendship.is_validated,
-            friend,
+            friend_who_asked: find_user(conn, friendship.user_who_asked_id)?.unwrap(),
+            friend_who_got_asked: find_user(conn, friendship.user_who_got_asked_id)?.unwrap(),
         })
     }
     Ok(res)
@@ -175,9 +182,11 @@ pub fn remove_user_friend(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     user_id: Uuid,
     user_friend_id: Uuid,
-) -> Result<RemoveFriendStatus, diesel::result::Error> {
+) -> Result<RemoveFriendshipResult, diesel::result::Error> {
     match does_friendship_exists(conn, user_id, user_friend_id)? {
-        FriendshipState::DoesNotExist => Ok(RemoveFriendStatus::ErrNoFriendship),
+        FriendshipState::DoesNotExist => Ok(RemoveFriendshipResult {
+            status: RemoveFriendStatus::ErrNoFriendship,
+        }),
         FriendshipState::ExistsAndValidated | FriendshipState::ExistsButNotValidate => {
             diesel::delete(
                 friendships.filter(
@@ -190,7 +199,9 @@ pub fn remove_user_friend(
                 ),
             )
             .execute(conn)?;
-            Ok(RemoveFriendStatus::RemoveSuccessful)
+            Ok(RemoveFriendshipResult {
+                status: RemoveFriendStatus::RemoveSuccessful,
+            })
         }
     }
 }
@@ -199,10 +210,12 @@ pub fn confirm_friendship(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     user_asked_id: Uuid,
     user_friend_id: Uuid,
-) -> Result<FriendshipAcceptingStatus, diesel::result::Error> {
+) -> Result<AcceptFriendshipResult, diesel::result::Error> {
     match does_friendship_exists(conn, user_asked_id, user_friend_id)? {
         FriendshipState::DoesNotExist | FriendshipState::ExistsAndValidated => {
-            Ok(FriendshipAcceptingStatus::ErrCannotAccept)
+            Ok(AcceptFriendshipResult {
+                status: FriendshipAcceptingStatus::ErrCannotAccept,
+            })
         }
         FriendshipState::ExistsButNotValidate => {
             diesel::update(
@@ -214,7 +227,9 @@ pub fn confirm_friendship(
             )
             .set(is_validated.eq(true))
             .execute(conn)?;
-            Ok(FriendshipAcceptingStatus::AcceptingSuccessful)
+            Ok(AcceptFriendshipResult {
+                status: FriendshipAcceptingStatus::AcceptingSuccessful,
+            })
         }
     }
 }
