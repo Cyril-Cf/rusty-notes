@@ -132,7 +132,12 @@ impl Mutation {
         user_friend_id: Uuid,
     ) -> FieldResult<RemoveFriendshipResult> {
         let conn = &mut context.pool.get()?;
-        let res = user_service::remove_user_friend(conn, user_id, user_friend_id);
+        let res = user_service::remove_user_friend(
+            conn,
+            user_id,
+            user_friend_id,
+            &context.notification_server,
+        );
         graphql_translate(res)
     }
     pub fn confirm_friendship(
@@ -141,7 +146,12 @@ impl Mutation {
         user_asking_id: Uuid,
     ) -> FieldResult<AcceptFriendshipResult> {
         let conn = &mut context.pool.get()?;
-        let res = user_service::confirm_friendship(conn, user_asked_id, user_asking_id);
+        let res = user_service::confirm_friendship(
+            conn,
+            user_asked_id,
+            user_asking_id,
+            &context.notification_server,
+        );
         graphql_translate(res)
     }
 

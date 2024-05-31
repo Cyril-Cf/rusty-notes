@@ -11,7 +11,7 @@ use crate::schema::friendships::dsl::{
     user_who_got_asked_id as friendship_id_2,
 };
 use crate::schema::users::dsl::{email, id, keycloak_uuid, users};
-use crate::{NotificationServer, SendFriendshipNotification};
+use crate::{MessageType, NotificationServer, SendFriendshipNotification};
 use actix::Addr;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
@@ -124,7 +124,7 @@ fn add_friendship(
         .execute(conn)?;
     notification_server.do_send(SendFriendshipNotification {
         user_id: user_friend_id,
-        message: "Vous avez un nouvel ami!".to_owned(),
+        message: MessageType::RefreshFriendships,
     });
     Ok(AddFriendshipResult {
         status: AddFriendStatus::AddSuccessful,
@@ -182,6 +182,7 @@ pub fn remove_user_friend(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     user_id: Uuid,
     user_friend_id: Uuid,
+    notification_server: &Addr<NotificationServer>,
 ) -> Result<RemoveFriendshipResult, diesel::result::Error> {
     match does_friendship_exists(conn, user_id, user_friend_id)? {
         FriendshipState::DoesNotExist => Ok(RemoveFriendshipResult {
@@ -199,6 +200,14 @@ pub fn remove_user_friend(
                 ),
             )
             .execute(conn)?;
+            notification_server.do_send(SendFriendshipNotification {
+                user_id,
+                message: MessageType::RefreshFriendships,
+            });
+            notification_server.do_send(SendFriendshipNotification {
+                user_id: user_friend_id,
+                message: MessageType::RefreshFriendships,
+            });
             Ok(RemoveFriendshipResult {
                 status: RemoveFriendStatus::RemoveSuccessful,
             })
@@ -210,6 +219,7 @@ pub fn confirm_friendship(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     user_asked_id: Uuid,
     user_friend_id: Uuid,
+    notification_server: &Addr<NotificationServer>,
 ) -> Result<AcceptFriendshipResult, diesel::result::Error> {
     match does_friendship_exists(conn, user_asked_id, user_friend_id)? {
         FriendshipState::DoesNotExist | FriendshipState::ExistsAndValidated => {
@@ -227,6 +237,14 @@ pub fn confirm_friendship(
             )
             .set(is_validated.eq(true))
             .execute(conn)?;
+            notification_server.do_send(SendFriendshipNotification {
+                user_id: user_asked_id,
+                message: MessageType::RefreshFriendships,
+            });
+            notification_server.do_send(SendFriendshipNotification {
+                user_id: user_friend_id,
+                message: MessageType::RefreshFriendships,
+            });
             Ok(AcceptFriendshipResult {
                 status: FriendshipAcceptingStatus::AcceptingSuccessful,
             })

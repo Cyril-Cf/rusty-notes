@@ -8,6 +8,7 @@ use diesel::r2d2::ConnectionManager;
 use r2d2::Pool;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt;
 use std::time::{Duration, Instant};
 use uuid::Uuid;
 
@@ -111,11 +112,11 @@ impl NotificationServer {
             user_sessions: HashMap::new(),
         }
     }
-    fn send_friendship_notification(&self, user_id: Uuid, message: &str) {
+    fn send_friendship_notification(&self, user_id: Uuid, message: MessageType) {
         if let Some(sessions) = self.user_sessions.get(&user_id) {
             for session_id in sessions {
                 if let Some(addr) = self.sessions.get(session_id) {
-                    addr.do_send(WsMessage(message.to_owned()));
+                    addr.do_send(WsMessage(message.to_string()));
                 }
             }
         }
@@ -126,18 +127,34 @@ impl Actor for NotificationServer {
     type Context = Context<Self>;
 }
 
+#[derive(Debug, Clone, Message)]
+#[rtype(result = "()")]
+pub enum MessageType {
+    RefreshFriendships,
+    RefreshLists,
+}
+
+impl fmt::Display for MessageType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            MessageType::RefreshFriendships => write!(f, "RefreshFriendships"),
+            MessageType::RefreshLists => write!(f, "RefreshLists"),
+        }
+    }
+}
+
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct SendFriendshipNotification {
     pub user_id: Uuid,
-    pub message: String,
+    pub message: MessageType,
 }
 
 impl Handler<SendFriendshipNotification> for NotificationServer {
     type Result = ();
 
     fn handle(&mut self, msg: SendFriendshipNotification, _: &mut Context<Self>) {
-        self.send_friendship_notification(msg.user_id, &msg.message);
+        self.send_friendship_notification(msg.user_id, msg.message);
     }
 }
 
@@ -250,7 +267,7 @@ async fn ws_handler(
         user_id,
         hb: Instant::now(),
         addr: data.get_ref().clone(),
-        lifetime: Duration::from_secs(10), // Durée de vie maximale de 1 heure
+        lifetime: Duration::from_secs(86400), // 1 day
     };
     println!("Starting WS for user {}", user_id);
     ws::start(ws, &req, stream)
@@ -260,16 +277,4 @@ fn logging_setup() {
     std::env::set_var("RUST_LOG", "debug");
     env_logger::init();
     dotenv::dotenv().ok();
-}
-
-// Example function to send a friend request notification
-async fn send_friend_request_notification(
-    notification_server: Addr<NotificationServer>,
-    user_id: Uuid,
-    message: String,
-) {
-    notification_server
-        .send(Notification { user_id, message })
-        .await
-        .unwrap();
 }

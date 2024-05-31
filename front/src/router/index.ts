@@ -105,20 +105,6 @@ const routes = [
     ],
   },
   {
-    path: '/profile',
-    component: () => import('@/layouts/default/Default.vue'),
-    children: [
-      {
-        path: '',
-        name: 'profile',
-        component: () => import('@/views/Profile.vue'),
-        meta: {
-          isAuthenticated: true,
-        },
-      },
-    ],
-  },
-  {
     path: '/unauthorized',
     component: () => import('@/layouts/default/Default.vue'),
     children: [
