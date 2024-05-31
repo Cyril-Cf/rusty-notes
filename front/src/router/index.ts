@@ -65,7 +65,7 @@ const routes = [
     children: [
       {
         path: '',
-        name: 'my_lists',
+        name: 'my_friends',
         component: () => import('@/views/MyFriends.vue'),
         meta: {
           isAuthenticated: true,
