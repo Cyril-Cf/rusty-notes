@@ -1,5 +1,6 @@
 import { Item } from './Item';
 import { Tag } from './Tag';
+import { User } from './User';
 
 export interface List {
     id: string;
@@ -7,6 +8,7 @@ export interface List {
     items: Item[];
     tags: Tag[];
     listType: ListType;
+    users: User[];
 }
 
 export enum ListType {
@@ -17,5 +19,5 @@ export enum ListType {
 export interface NewList {
     name: string;
     listType: string;
-    userId?: string;
+    userId: string;
 }

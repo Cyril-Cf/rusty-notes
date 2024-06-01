@@ -6,10 +6,14 @@ use crate::models::item::{CreateItem, Item, UpdateItem};
 use crate::models::list::{CreateList, ListGraphQL};
 use crate::models::list_tag::{CreateListTag, ListTag};
 use crate::models::notification::{CreateNotification, Notification, UpdateNotificationGQL};
-use crate::models::user::{CreateUser, ModifyUser, User};
-use crate::services::friendship_service;
+use crate::models::user::{self, CreateUser, ModifyUser, User};
+use crate::services::friendship_service::{
+    self, AcceptFriendshipResult, AddFriendshipResult, RemoveFriendshipResult,
+};
 use crate::services::item_service;
-use crate::services::list_service;
+use crate::services::list_service::{
+    self, AddFriendToMyListResult, AddListResult, RemoveFriendFromMyListResult,
+};
 use crate::services::list_tag_service;
 use crate::services::notification_service;
 use crate::services::user_service;
@@ -31,21 +35,6 @@ pub enum DeleteStatus {
 #[derive(Debug, GraphQLObject)]
 pub struct UpdateResult {
     pub status: UpdateStatus,
-}
-
-#[derive(Debug, GraphQLObject)]
-pub struct AddFriendshipResult {
-    pub status: AddFriendStatus,
-}
-
-#[derive(Debug, GraphQLObject)]
-pub struct RemoveFriendshipResult {
-    pub status: RemoveFriendStatus,
-}
-
-#[derive(Debug, GraphQLObject)]
-pub struct AcceptFriendshipResult {
-    pub status: FriendshipAcceptingStatus,
 }
 
 #[derive(Debug, GraphQLEnum)]
@@ -170,7 +159,7 @@ impl Mutation {
     }
 
     // LIST
-    pub fn create_list(context: &GraphQLContext, input: CreateList) -> FieldResult<ListGraphQL> {
+    pub fn create_list(context: &GraphQLContext, input: CreateList) -> FieldResult<AddListResult> {
         let conn = &mut context.pool.get()?;
         let res = list_service::create_list(conn, input);
         graphql_translate(res)
@@ -181,6 +170,25 @@ impl Mutation {
     pub fn delete_list(context: &GraphQLContext, list_id: Uuid) -> FieldResult<DeleteResult> {
         let conn = &mut context.pool.get()?;
         let res = list_service::delete_list(conn, list_id);
+        graphql_translate(res)
+    }
+    pub fn invite_user_to_your_list(
+        context: &GraphQLContext,
+        list_id: Uuid,
+        user_id: Uuid,
+        friend_id: Uuid,
+    ) -> FieldResult<AddFriendToMyListResult> {
+        let conn = &mut context.pool.get()?;
+        let res = list_service::invite_user_to_your_list(conn, list_id, user_id, friend_id);
+        graphql_translate(res)
+    }
+    pub fn remove_user_from_list(
+        context: &GraphQLContext,
+        list_id: Uuid,
+        friend_id: Uuid,
+    ) -> FieldResult<RemoveFriendFromMyListResult> {
+        let conn = &mut context.pool.get()?;
+        let res = list_service::remove_user_from_list(conn, list_id, friend_id);
         graphql_translate(res)
     }
 

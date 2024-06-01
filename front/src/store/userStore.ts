@@ -48,6 +48,15 @@ export const useUserStore = defineStore('user', () => {
     });
     if (data && data.getUserFriendships) {
       friendships.value = data.getUserFriendships;
+      let friends: User[] = [];
+      friendships.value.forEach((friendship) => {
+        if (friendship.friendWhoAsked.id === userId) {
+          friends.push(friendship.friendWhoGotAsked);
+        } else {
+          friends.push(friendship.friendWhoAsked)
+        }
+      });
+      userFriends.value = friends;
     }
   }
 

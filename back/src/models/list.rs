@@ -1,19 +1,17 @@
-use super::item::Item;
 use super::list_tag::ListTag;
+use super::{item::Item, user::User};
 use diesel::prelude::*;
 use juniper::{GraphQLEnum, GraphQLInputObject, GraphQLObject};
 use uuid::Uuid;
 
 use crate::schema::lists;
 
-#[derive(Queryable, Associations, Identifiable, Debug)]
-#[diesel(belongs_to(super::user::User))]
+#[derive(Queryable, Selectable, Identifiable, Debug, Clone)]
 #[diesel(table_name = lists)]
 pub struct List {
     pub id: Uuid,
     pub name: String,
     pub list_type: ListType,
-    pub user_id: Uuid,
 }
 
 #[derive(diesel_derive_enum::DbEnum, Debug, GraphQLEnum, Clone)]
@@ -33,7 +31,7 @@ pub struct ListGraphQL {
     pub list_type: ListType,
     pub tags: Vec<ListTag>,
     pub items: Vec<Item>,
-    pub user_id: Uuid,
+    pub users: Vec<User>,
 }
 
 #[derive(AsChangeset)]
@@ -42,7 +40,6 @@ pub struct ListChangeset {
     pub id: Option<Uuid>,
     pub name: Option<String>,
     pub list_type: Option<ListType>,
-    pub user_id: Option<Uuid>,
 }
 
 #[derive(Insertable)]
@@ -51,7 +48,6 @@ pub struct NewList {
     pub id: Uuid,
     pub name: String,
     pub list_type: ListType,
-    pub user_id: Uuid,
 }
 
 #[derive(GraphQLInputObject)]
@@ -65,4 +61,29 @@ pub struct CreateList {
 pub struct UpdateList {
     pub name: String,
     pub list_type: ListType,
+}
+
+#[derive(Debug, GraphQLEnum)]
+pub enum AddFriendToMyListStatus {
+    AddSuccessful,
+    ErrNoFriendshipFound,
+    ErrNoListFound,
+    ErrNoUserFound,
+    ErrNoUserFriendFound,
+    ErrNotFriends,
+    ErrServerIssue,
+}
+
+#[derive(Debug, GraphQLEnum)]
+pub enum RemoveFriendFromMyListStatus {
+    RemoveSuccessful,
+    ErrNoListFound,
+    ErrNoUserFriendFound,
+    ErrServerIssue,
+}
+
+#[derive(Debug, GraphQLEnum)]
+pub enum AddListStatus {
+    AddSuccessful,
+    ErrNoUserFound,
 }

@@ -17,6 +17,12 @@ export const findOneWithItemsAndTags = gql`
                 id
                 name
             }
+            users {
+                id
+                firstname
+                lastname
+                email
+            }
         }
     }
 `

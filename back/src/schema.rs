@@ -52,7 +52,6 @@ diesel::table! {
         id -> Uuid,
         name -> Varchar,
         list_type -> ListType,
-        user_id -> Uuid,
     }
 }
 
@@ -69,6 +68,13 @@ diesel::table! {
 }
 
 diesel::table! {
+    user_lists (user_id, list_id) {
+        user_id -> Uuid,
+        list_id -> Uuid,
+    }
+}
+
+diesel::table! {
     users (id) {
         id -> Uuid,
         firstname -> Varchar,
@@ -80,8 +86,9 @@ diesel::table! {
 
 diesel::joinable!(items -> lists (list_id));
 diesel::joinable!(list_tags -> lists (list_id));
-diesel::joinable!(lists -> users (user_id));
 diesel::joinable!(notifications -> users (user_id));
+diesel::joinable!(user_lists -> lists (list_id));
+diesel::joinable!(user_lists -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     friendships,
@@ -89,5 +96,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     list_tags,
     lists,
     notifications,
+    user_lists,
     users,
 );

@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::schema::users;
 
-#[derive(Queryable, Identifiable, Debug, GraphQLObject)]
+#[derive(Queryable, Selectable, Identifiable, Debug, GraphQLObject)]
 #[diesel(table_name = users)]
 #[graphql(description = "A user")]
 pub struct User {

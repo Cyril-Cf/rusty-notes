@@ -11,6 +11,12 @@ export const findAllListForUserWithTags = gql`
             tags {
                 name
             }
+            users {
+                id
+                firstname
+                lastname
+                email
+            }
         }
     }
 `

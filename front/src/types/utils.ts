@@ -15,3 +15,28 @@ export enum UpdateStatus {
     ResourceUpdated = 'RESOURCE_UPDATED',
     NoUpdate = 'NO_UPDATE',
 }
+
+export interface AddFriendToMyListResult {
+    status: AddFriendToMyListStatus
+}
+
+export enum AddFriendToMyListStatus {
+    AddSuccessful = 'ADD_SUCCESSFUL',
+    ErrNoFriendshipFound = 'ERR_NO_FRIENDSHIP_FOUND',
+    ErrNoListFound = 'ERR_NO_LIST_FOUND',
+    ErrNoUserFound = 'ERR_NO_USER_FOUND',
+    ErrNoUserFriendFound = 'ERR_NO_USER_FRIEND_FOUND',
+    ErrNotFriends = 'ERR_NOT_FRIENDS',
+    ErrServerIssue = 'ERR_SERVER_ISSUE',
+}
+
+export interface RemoveFriendFromMyListResult {
+    status: RemoveFriendFromMyListStatus
+}
+
+export enum RemoveFriendFromMyListStatus {
+    RemoveSuccessful = 'REMOVE_SUCCESSFUL',
+    ErrNoListFound = 'ERR_NO_LIST_FOUND',
+    ErrNoUserFriendFound = 'ERR_NO_USER_FRIEND_FOUND',
+    ErrServerIssue = 'ERR_SERVER_ISSUE',
+}

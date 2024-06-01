@@ -1,6 +1,4 @@
-use crate::graphql_logic::graphql::{
-    AcceptFriendshipResult, AddFriendshipResult, RemoveFriendshipResult,
-};
+use super::user_service::{find_user, find_user_with_email};
 use crate::models::friendship::{
     AddFriendStatus, Friendship, FriendshipAcceptingStatus, FriendshipGraphQL, FriendshipState,
     NewFriendship, RemoveFriendStatus,
@@ -17,9 +15,23 @@ use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::r2d2::ConnectionManager;
 use diesel::r2d2::PooledConnection;
+use juniper::GraphQLObject;
 use uuid::Uuid;
 
-use super::user_service::{find_user, find_user_with_email};
+#[derive(Debug, GraphQLObject)]
+pub struct AddFriendshipResult {
+    pub status: AddFriendStatus,
+}
+
+#[derive(Debug, GraphQLObject)]
+pub struct RemoveFriendshipResult {
+    pub status: RemoveFriendStatus,
+}
+
+#[derive(Debug, GraphQLObject)]
+pub struct AcceptFriendshipResult {
+    pub status: FriendshipAcceptingStatus,
+}
 
 pub fn add_friend_user(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
@@ -76,7 +88,7 @@ fn add_friendship(
     })
 }
 
-fn does_friendship_exists(
+pub fn does_friendship_exists(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     user_id: Uuid,
     user_friend_id: Uuid,

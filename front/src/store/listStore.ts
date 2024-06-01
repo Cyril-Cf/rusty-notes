@@ -4,13 +4,15 @@ import { apolloClient } from '../apollo'
 import { updateItem } from '../graphql/mutations/updateItem.mutation'
 import { deleteItem } from '../graphql/mutations/deleteItem.mutation'
 import { createItem } from '../graphql/mutations/createItem.mutation'
+import { inviteUserToYourList } from '@/graphql/mutations/inviteUserToYourList.mutation'
+import { removeUserFromList } from '@/graphql/mutations/removeUserFromList.mutation'
 import { findAllListForUserWithTags } from '../graphql/queries/findAllListForUserWithTags.query';
 import { findOneWithItemsAndTags } from '../graphql/queries/findOneWithItemsAndTags.query'
 import { createList } from '../graphql/mutations/createList.mutation'
 import { deleteList } from '../graphql/mutations/deleteList.mutation'
 import { List, NewList } from '../types/List';
 import { NewItem, Item } from '../types/Item'
-import { DeleteStatus, DeleteResult } from '@/types/utils';
+import { DeleteStatus, DeleteResult, AddFriendToMyListStatus, AddFriendToMyListResult, RemoveFriendFromMyListResult, RemoveFriendFromMyListStatus } from '@/types/utils';
 import { toast } from 'vue3-toastify';
 
 export const useListStore = defineStore('list', () => {
@@ -36,7 +38,7 @@ export const useListStore = defineStore('list', () => {
             fetchPolicy: 'no-cache'
         });
         if (data && data.createList) {
-            lists.value.push(data.createList);
+            await fetchLists(input.userId);
         }
     }
 
@@ -124,5 +126,63 @@ export const useListStore = defineStore('list', () => {
         }
     }
 
-    return { lists, selectedList, selectedItems, fetchLists, createNewList, deleteSelectedList, fetchOne, addItemToList, deleteItemFromList, updateItemFromList }
+    async function inviteUserToMyList(listId: String, userId: String, friendId: String) {
+        const { data } = await apolloClient.mutate({
+            mutation: inviteUserToYourList,
+            variables: { listId, userId, friendId },
+            fetchPolicy: 'no-cache'
+        });
+        if (data && data.inviteUserToYourList) {
+            const res: AddFriendToMyListResult = data.inviteUserToYourList;
+            if (res.status == AddFriendToMyListStatus.AddSuccessful) {
+                toast.success("Votre ami peut voir la liste !", {
+                    position: toast.POSITION.BOTTOM_CENTER,
+                });
+                await fetchLists(userId);
+                await fetchOne(listId);
+            } else {
+                toast.error("Erreur lors du partage !", {
+                    position: toast.POSITION.BOTTOM_CENTER,
+                });
+            }
+        }
+    }
+
+    async function removeAUserFromList(listId: String, userId: String, friendId: String) {
+        const { data } = await apolloClient.mutate({
+            mutation: removeUserFromList,
+            variables: { listId, friendId },
+            fetchPolicy: 'no-cache'
+        });
+        if (data && data.removeUserFromList) {
+            const res: RemoveFriendFromMyListResult = data.removeUserFromList;
+            if (res.status == RemoveFriendFromMyListStatus.RemoveSuccessful) {
+                toast.success("Utilisateur retiré de la liste.", {
+                    position: toast.POSITION.BOTTOM_CENTER,
+                });
+                await fetchLists(userId);
+                await fetchOne(listId);
+            } else {
+                toast.error("Erreur lors de la suppression !", {
+                    position: toast.POSITION.BOTTOM_CENTER,
+                });
+            }
+        }
+    }
+
+
+    return {
+        lists,
+        selectedList,
+        selectedItems,
+        fetchLists,
+        createNewList,
+        deleteSelectedList,
+        fetchOne,
+        addItemToList,
+        deleteItemFromList,
+        updateItemFromList,
+        inviteUserToMyList,
+        removeAUserFromList
+    }
 })

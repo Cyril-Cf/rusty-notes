@@ -5,7 +5,22 @@
             <v-row>
                 <v-col v-for="(list, index) in listStore.lists" :key="index">
                     <v-card>
-                        <v-card-title>{{ list.name }}</v-card-title>
+                        <v-card-title>
+                            {{ list.name }} (
+                            <v-tooltip>
+                                <template v-slot:activator="{ props }">
+                                    <span v-bind="props">{{ list.users.length }} {{ list.users.length > 1 ?
+                                        "utilisateurs" : "utilisateur" }}</span>
+                                </template>
+                                <span>
+                                    <ul>
+                                        <li v-for="user in list.users" :key="user.id.toString()">{{ user.firstname }} {{
+                                            user.lastname }}</li>
+                                    </ul>
+                                </span>
+                            </v-tooltip>
+                            )
+                        </v-card-title>
                         <v-card-text>
                             <v-chip v-for="(tag, index) in list.tags" :key="index" class="ma-1" outlined>{{ tag
                                 }}</v-chip>
@@ -13,6 +28,7 @@
                         <v-card-actions>
                             <v-btn @click="goToSingleList(index)" color="primary">Détails</v-btn>
                             <v-btn @click="deleteList(index)" color="error">Supprimer</v-btn>
+                            <v-icon @click="openSettings(list)" class="ml-auto">mdi-cog</v-icon>
                         </v-card-actions>
                     </v-card>
                 </v-col>
@@ -23,18 +39,162 @@
                 </v-col>
             </v-row>
         </v-container>
+
+        <v-dialog v-model="settingsDialog" max-width="600">
+            <v-card>
+                <v-card-text>
+                    <v-data-table :headers="headers" :items="selectedList?.users">
+                        <template v-slot:top>
+                            <v-toolbar flat>
+                                <v-toolbar-title>Utilisateurs</v-toolbar-title>
+                                <v-divider class="mx-4" inset vertical></v-divider>
+                                <v-spacer></v-spacer>
+                                <v-dialog v-model="inviteFriendModal" max-width="500px">
+                                    <template v-slot:activator="{ props }">
+                                        <v-btn class="mb-2" color="primary" dark v-bind="props">
+                                            Inviter un ami
+                                        </v-btn>
+                                    </template>
+                                    <v-card>
+                                        <v-card-title>
+                                            <span class="text-h5">Inviter un ami à cette liste</span>
+                                        </v-card-title>
+
+                                        <v-card-text>
+                                            <v-container>
+                                                <v-row>
+                                                    <v-col cols="12" md="12" sm="12">
+                                                        <v-select :items="friendsToInvite"
+                                                            :item-title="getFriendFullName" item-value="id"
+                                                            no-data-text="Personne à ajouter" v-model="selectedFriend"
+                                                            label="Sélectionner un ami"></v-select>
+                                                    </v-col>
+                                                </v-row>
+                                            </v-container>
+                                        </v-card-text>
+
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <v-btn color="blue-darken-1" variant="text" @click="closeInviteFriendModal">
+                                                Annuler
+                                            </v-btn>
+                                            <v-btn color="blue-darken-1" variant="text" @click="saveInviteFriendModal">
+                                                Inviter
+                                            </v-btn>
+                                        </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
+                                <v-dialog v-model="removeFriendModal" max-width="500px">
+                                    <v-card>
+                                        <v-card-title class="text-h5">Etes vous certain de vouloir retirer cet ami de la
+                                            liste ?</v-card-title>
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <v-btn color="blue-darken-1" variant="text"
+                                                @click="closeRemoveFriendModal">Annuler</v-btn>
+                                            <v-btn color="blue-darken-1" variant="text"
+                                                @click="RemoveFriendConfirm">OK</v-btn>
+                                            <v-spacer></v-spacer>
+                                        </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
+                            </v-toolbar>
+                        </template>
+                        <template v-slot:item.action="{ item }">
+                            <v-icon v-if="showDeletebutton(item)" color="black" size="small"
+                                @click="removeFriend(item)">
+                                mdi-delete
+                            </v-icon>
+                        </template>
+                    </v-data-table>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" @click="closeSettings">Fermer</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </div>
 </template>
 
 <script lang="ts" setup>
+import { ref, onMounted, computed } from 'vue';
 import { useListStore } from "@/store/listStore";
 import { useUserStore } from "@/store/userStore";
-import { onMounted } from "vue";
 import authPromise from "@/plugins/keycloak";
 import router from "@/router";
+import { List } from '@/types/List';
+import { VDataTable } from 'vuetify/labs/VDataTable'
+import { User } from '@/types/User';
 
 const userStore = useUserStore();
 const listStore = useListStore();
+
+const settingsDialog = ref(false);
+const selectedList = ref<List | undefined>(undefined);
+const selectedFriend = ref<String | null>(null);
+const friendToRemove = ref<User | null>(null);
+const removeFriendModal = ref(false)
+
+const headers = [
+    { title: 'Nom', key: 'firstname', sortable: false },
+    { title: 'Prénom', key: 'lastname', sortable: false },
+    { title: 'Email', key: 'email', sortable: false },
+    { title: 'Action', key: 'action', sortable: false },
+];
+
+const inviteFriendModal = ref(false);
+const closeInviteFriendModal = () => {
+    inviteFriendModal.value = false
+}
+const saveInviteFriendModal = async () => {
+    if (selectedList.value && userStore.currentUser && selectedFriend.value) {
+        await listStore.inviteUserToMyList(selectedList.value.id, userStore.currentUser?.id.valueOf(), selectedFriend.value);
+    }
+    inviteFriendModal.value = false;
+    settingsDialog.value = false;
+}
+
+
+
+const removeFriend = (friend: User) => {
+    friendToRemove.value = friend;
+    removeFriendModal.value = true;
+}
+
+const closeRemoveFriendModal = () => {
+    removeFriendModal.value = false
+}
+
+const friendsToInvite = computed(() => {
+    if (selectedList.value) {
+        return userStore.userFriends.filter(friend => !selectedList.value?.users.some(user => user.id === friend.id));
+    } else {
+        return [];
+    }
+});
+
+const showDeletebutton = (user: User) => {
+    if (userStore.currentUser) {
+        if (userStore.currentUser.id === user.id) {
+            return false;
+        }
+    }
+    return true;
+}
+
+const RemoveFriendConfirm = async () => {
+    const listId = selectedList.value?.id;
+    if (listId && userStore.currentUser && friendToRemove.value) {
+        await listStore.removeAUserFromList(listId, userStore.currentUser?.id, friendToRemove.value.id);
+        selectedList.value = listStore.lists.find(list => list.id === listId);
+    }
+    removeFriendModal.value = false
+}
+
+const getFriendFullName = (friend: User) => {
+    return `${friend.firstname} ${friend.lastname}(${friend.email})`
+}
 
 const showAddListDialog = () => {
     router.push({ path: "/add_list" });
@@ -46,26 +206,34 @@ const deleteList = async (index: any) => {
     if (userId && listId) {
         await listStore.deleteSelectedList(listId, userId);
     }
-}
+};
 
 const goToSingleList = (index: number) => {
     const listId = listStore.lists.at(index)?.id;
     if (listId) {
         router.push({ path: `/single_list/${listId}` });
     }
+};
 
-}
+const openSettings = (list: any) => {
+    selectedList.value = list;
+    settingsDialog.value = true;
+};
+
+const closeSettings = () => {
+    settingsDialog.value = false;
+    selectedList.value = undefined;
+};
 
 onMounted(async () => {
     authPromise.then(async (auth) => {
         if (auth.isAuthenticated()) {
-            const userStore = useUserStore();
             let userIsInDB = await userStore.DoesUserExistInDB(auth.userId()!);
             if (userIsInDB) {
                 let userId = userStore.currentUser?.id;
                 if (userId) {
-                    const listStore = useListStore();
                     listStore.fetchLists(userId);
+                    await userStore.getFriendships(userId);
                 }
             } else {
                 router.push({ path: "/subscription_more_infos/my_lists" });
@@ -75,4 +243,9 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+ul {
+    list-style-type: none;
+    padding-left: 5px;
+}
+</style>
