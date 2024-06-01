@@ -55,7 +55,7 @@ impl Actor for WsSession {
         });
 
         // Commencez le timer pour la durée de vie maximale
-        ctx.run_later(self.lifetime, |actor, ctx| {
+        ctx.run_later(self.lifetime, |_actor, ctx| {
             ctx.stop();
         });
     }
@@ -175,7 +175,7 @@ impl Handler<Connect> for NotificationServer {
         self.sessions.insert(msg.id, msg.addr.clone());
         self.user_sessions
             .entry(msg.user_id)
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(msg.id);
     }
 }
