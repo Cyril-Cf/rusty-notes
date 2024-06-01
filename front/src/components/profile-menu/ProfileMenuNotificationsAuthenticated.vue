@@ -66,11 +66,11 @@ const unreadNotificationsCount = computed(() => {
 const getNotificationMessage = (notification: Notification) => {
     switch (notification.notifType) {
         case NotifType.NEW_FRIENDSHIP_DEMAND:
-            return "New friendship demand";
+            return "Nouvelle demande d'amitiée";
         case NotifType.NEW_FRIENDSHIP_ACCEPTED:
-            return "Friendship accepted";
+            return "Amitiée acceptée";
         case NotifType.SHARED_LIST_MODIFIED:
-            return "Shared list modified";
+            return "Liste commune modifiée";
         default:
             return "Unknown notification";
     }
