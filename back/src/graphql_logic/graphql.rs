@@ -11,7 +11,8 @@ use crate::services::friendship_service::{
 };
 use crate::services::item_service;
 use crate::services::list_service::{
-    self, AddFriendToMyListResult, AddListResult, RemoveFriendFromMyListResult,
+    self, AcceptListInvitationResult, AddFriendToMyListResult, AddListResult,
+    RefuseListInvitationResult, RemoveFriendFromMyListResult,
 };
 use crate::services::list_tag_service;
 use crate::services::notification_service;
@@ -81,9 +82,10 @@ impl Query {
     pub fn find_one_with_items_and_tags(
         context: &GraphQLContext,
         list_id: Uuid,
+        user_id: Uuid,
     ) -> FieldResult<Option<ListGraphQL>> {
         let conn = &mut context.pool.get()?;
-        let res = list_service::find_one_with_items_and_tags(conn, list_id);
+        let res = list_service::find_one_with_items_and_tags(conn, list_id, user_id);
         graphql_translate(res)
     }
 
@@ -190,6 +192,25 @@ impl Mutation {
     ) -> FieldResult<RemoveFriendFromMyListResult> {
         let conn = &mut context.pool.get()?;
         let res = list_service::remove_user_from_list(conn, list_id, friend_id);
+        graphql_translate(res)
+    }
+    pub fn accept_list_invitation(
+        context: &GraphQLContext,
+        list_id: Uuid,
+        user_id: Uuid,
+    ) -> FieldResult<AcceptListInvitationResult> {
+        let conn = &mut context.pool.get()?;
+        let res = list_service::accept_list_invitation(conn, list_id, user_id);
+        graphql_translate(res)
+    }
+
+    pub fn refuse_list_invitation(
+        context: &GraphQLContext,
+        list_id: Uuid,
+        user_id: Uuid,
+    ) -> FieldResult<RefuseListInvitationResult> {
+        let conn = &mut context.pool.get()?;
+        let res = list_service::refuse_list_invitation(conn, list_id, user_id);
         graphql_translate(res)
     }
 

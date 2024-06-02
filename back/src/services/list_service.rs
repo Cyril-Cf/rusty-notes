@@ -2,8 +2,8 @@ use crate::graphql_logic::graphql::{DeleteResult, DeleteStatus};
 use crate::models::friendship::FriendshipState;
 use crate::models::item::Item;
 use crate::models::list::{
-    AddFriendToMyListStatus, AddListStatus, CreateList, List, ListGraphQL, NewList,
-    RemoveFriendFromMyListStatus,
+    AcceptListInvitationStatus, AddFriendToMyListStatus, AddListStatus, CreateList, List,
+    ListGraphQL, NewList, RefuseListInvitationStatus, RemoveFriendFromMyListStatus,
 };
 use crate::models::list_tag::ListTag;
 use crate::models::user::User;
@@ -14,7 +14,7 @@ use crate::schema::items::dsl::{items, list_id as ItemListId};
 use crate::schema::list_tags::dsl::{list_id as ListTagListId, list_tags};
 use crate::schema::lists::dsl::{id as ListId, lists};
 use crate::schema::user_lists::dsl::{
-    list_id as UserList_list_id, user_id as UserList_user_id, user_lists,
+    is_validated, list_id as UserList_list_id, user_id as UserList_user_id, user_lists,
 };
 use crate::schema::users::dsl::users;
 use crate::services::friendship_service;
@@ -39,6 +39,16 @@ pub struct RemoveFriendFromMyListResult {
 #[derive(Debug, GraphQLObject)]
 pub struct AddListResult {
     pub status: AddListStatus,
+}
+
+#[derive(Debug, GraphQLObject)]
+pub struct AcceptListInvitationResult {
+    pub status: AcceptListInvitationStatus,
+}
+
+#[derive(Debug, GraphQLObject)]
+pub struct RefuseListInvitationResult {
+    pub status: RefuseListInvitationStatus,
 }
 
 fn find_one(
@@ -110,10 +120,14 @@ pub fn find_all_list_for_user_with_tags(
 
     // Fetch tags and items for each list
     for list in all_user_lists.iter() {
+        let association_table_values = get_list_user_association(conn, list.id, user_id)?.unwrap();
         let mut current_list = ListGraphQL {
             id: list.id,
             name: list.name.clone(),
             list_type: list.list_type.clone(),
+            is_owner: association_table_values.is_owner,
+            is_validated: association_table_values.is_validated,
+            list_permission: association_table_values.list_permission,
             tags: Vec::new(),
             items: Vec::new(),
             users: Vec::new(),
@@ -127,16 +141,21 @@ pub fn find_all_list_for_user_with_tags(
 pub fn find_one_with_items_and_tags(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     list_id: Uuid,
+    user_id: Uuid,
 ) -> Result<Option<ListGraphQL>, diesel::result::Error> {
     let list = find_one(conn, list_id)?;
     if list.is_none() {
         return Ok(None);
     };
     let list = list.unwrap();
+    let association_table_values = get_list_user_association(conn, list.id, user_id)?.unwrap();
     let mut res = ListGraphQL {
         id: list.id,
         name: list.name,
         list_type: list.list_type,
+        is_owner: association_table_values.is_owner,
+        is_validated: association_table_values.is_validated,
+        list_permission: association_table_values.list_permission,
         tags: Vec::new(),
         items: Vec::new(),
         users: Vec::new(),
@@ -152,12 +171,11 @@ fn link_list_to_user(
     is_owner: bool,
     permission: ListPermission,
 ) -> Result<AddUserToListStatus, diesel::result::Error> {
-    let is_validated = if is_owner { true } else { false };
     let new_link = NewUserList {
         user_id,
         list_id,
         is_owner,
-        is_validated,
+        is_validated: is_owner,
         list_permission: permission,
     };
     diesel::insert_into(user_lists)
@@ -288,6 +306,75 @@ pub fn remove_user_from_list(
         }),
         RemoveUserFromListStatus::RemoveSuccessful => Ok(RemoveFriendFromMyListResult {
             status: RemoveFriendFromMyListStatus::RemoveSuccessful,
+        }),
+    }
+}
+
+fn get_list_user_association(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    list_id: Uuid,
+    user_id: Uuid,
+) -> Result<Option<UserList>, diesel::result::Error> {
+    match user_lists
+        .filter(
+            UserList_list_id
+                .eq(list_id)
+                .and(UserList_user_id.eq(user_id)),
+        )
+        .first::<UserList>(conn)
+    {
+        Ok(user_list) => Ok(Some(user_list)),
+        Err(_) => Ok(None),
+    }
+}
+
+pub fn accept_list_invitation(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    list_id: Uuid,
+    user_id: Uuid,
+) -> Result<AcceptListInvitationResult, diesel::result::Error> {
+    match get_list_user_association(conn, list_id, user_id)? {
+        Some(_) => {
+            diesel::update(
+                user_lists.filter(
+                    UserList_list_id
+                        .eq(list_id)
+                        .and(UserList_user_id.eq(user_id)),
+                ),
+            )
+            .set(is_validated.eq(true))
+            .execute(conn)?;
+            Ok(AcceptListInvitationResult {
+                status: AcceptListInvitationStatus::AcceptSuccessful,
+            })
+        }
+        None => Ok(AcceptListInvitationResult {
+            status: AcceptListInvitationStatus::ErrNoInvitationFound,
+        }),
+    }
+}
+
+pub fn refuse_list_invitation(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    list_id: Uuid,
+    user_id: Uuid,
+) -> Result<RefuseListInvitationResult, diesel::result::Error> {
+    match get_list_user_association(conn, list_id, user_id)? {
+        Some(_) => {
+            diesel::delete(
+                user_lists.filter(
+                    UserList_list_id
+                        .eq(list_id)
+                        .and(UserList_user_id.eq(user_id)),
+                ),
+            )
+            .execute(conn)?;
+            Ok(RefuseListInvitationResult {
+                status: RefuseListInvitationStatus::RefuseSuccessful,
+            })
+        }
+        None => Ok(RefuseListInvitationResult {
+            status: RefuseListInvitationStatus::ErrNoInvitationFound,
         }),
     }
 }

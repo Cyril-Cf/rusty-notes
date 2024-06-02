@@ -1,6 +1,8 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { apolloClient } from '../apollo'
+import { acceptListInvitation } from '@/graphql/mutations/acceptListInvitation.mutation'
+import { refuseListInvitation } from '@/graphql/mutations/refuseListInvitation.mutation'
 import { updateItem } from '../graphql/mutations/updateItem.mutation'
 import { deleteItem } from '../graphql/mutations/deleteItem.mutation'
 import { createItem } from '../graphql/mutations/createItem.mutation'
@@ -12,11 +14,16 @@ import { createList } from '../graphql/mutations/createList.mutation'
 import { deleteList } from '../graphql/mutations/deleteList.mutation'
 import { List, ListPermission, NewList } from '../types/List';
 import { NewItem, Item } from '../types/Item'
-import { DeleteStatus, DeleteResult, AddFriendToMyListStatus, AddFriendToMyListResult, RemoveFriendFromMyListResult, RemoveFriendFromMyListStatus } from '@/types/utils';
+import { DeleteStatus, DeleteResult, AddFriendToMyListStatus, AddFriendToMyListResult, RemoveFriendFromMyListResult, RemoveFriendFromMyListStatus, RefuseListInvitationResult, RefuseListInvitationStatus, AcceptListInvitationResult, AcceptListInvitationStatus } from '@/types/utils';
 import { toast } from 'vue3-toastify';
+import { useUserStore } from './userStore'
 
 export const useListStore = defineStore('list', () => {
+    const userStore = useUserStore();
     const lists = ref<List[]>([]);
+    const ownedLists = ref<List[]>([]);
+    const sharedListsValidated = ref<List[]>([]);
+    const sharedListToValidate = ref<List[]>([]);
     const selectedList = ref<List | undefined>();
     const selectedItems = ref<Item[]>([])
 
@@ -28,6 +35,18 @@ export const useListStore = defineStore('list', () => {
         });
         if (data && data.findAllListForUserWithTags) {
             lists.value = data.findAllListForUserWithTags;
+            ownedLists.value = [];
+            sharedListToValidate.value = [];
+            sharedListsValidated.value = [];
+            lists.value.forEach((list) => {
+                if (list.isOwner) {
+                    ownedLists.value.push(list);
+                } else if (list.isValidated) {
+                    sharedListsValidated.value.push(list);
+                } else {
+                    sharedListToValidate.value.push(list)
+                }
+            })
         }
     }
 
@@ -43,9 +62,10 @@ export const useListStore = defineStore('list', () => {
     }
 
     async function fetchOne(listId: String) {
+        let userId = userStore.currentUser?.id;
         const { data } = await apolloClient.query({
             query: findOneWithItemsAndTags,
-            variables: { listId },
+            variables: { listId, userId },
             fetchPolicy: 'no-cache'
         });
         if (data && data.findOneWithItemsAndTags) {
@@ -139,7 +159,6 @@ export const useListStore = defineStore('list', () => {
                     position: toast.POSITION.BOTTOM_CENTER,
                 });
                 await fetchLists(userId);
-                await fetchOne(listId);
             } else {
                 toast.error("Erreur lors du partage !", {
                     position: toast.POSITION.BOTTOM_CENTER,
@@ -161,7 +180,6 @@ export const useListStore = defineStore('list', () => {
                     position: toast.POSITION.BOTTOM_CENTER,
                 });
                 await fetchLists(userId);
-                await fetchOne(listId);
             } else {
                 toast.error("Erreur lors de la suppression !", {
                     position: toast.POSITION.BOTTOM_CENTER,
@@ -170,9 +188,53 @@ export const useListStore = defineStore('list', () => {
         }
     }
 
+    async function acceptListInvitationStore(listId: String, userId: String) {
+        const { data } = await apolloClient.mutate({
+            mutation: acceptListInvitation,
+            variables: { listId, userId },
+            fetchPolicy: 'no-cache'
+        });
+        if (data && data.acceptListInvitation) {
+            const res: AcceptListInvitationResult = data.acceptListInvitation;
+            if (res.status == AcceptListInvitationStatus.ACCEPT_SUCCESSFUL) {
+                toast.success("Liste ajoutée aux votres !", {
+                    position: toast.POSITION.BOTTOM_CENTER,
+                });
+                await fetchLists(userId);
+            } else {
+                toast.error("Erreur lors du partage !", {
+                    position: toast.POSITION.BOTTOM_CENTER,
+                });
+            }
+        }
+    }
+
+    async function refuseListInvitationStore(listId: String, userId: String) {
+        const { data } = await apolloClient.mutate({
+            mutation: refuseListInvitation,
+            variables: { listId, userId },
+            fetchPolicy: 'no-cache'
+        });
+        if (data && data.refuseListInvitation) {
+            const res: RefuseListInvitationResult = data.refuseListInvitation;
+            if (res.status == RefuseListInvitationStatus.REFUSE_SUCCESSFUL) {
+                toast.success("Refus prise en compte", {
+                    position: toast.POSITION.BOTTOM_CENTER,
+                });
+                await fetchLists(userId);
+            } else {
+                toast.error("Erreur lors du partage !", {
+                    position: toast.POSITION.BOTTOM_CENTER,
+                });
+            }
+        }
+    }
+
 
     return {
-        lists,
+        ownedLists,
+        sharedListToValidate,
+        sharedListsValidated,
         selectedList,
         selectedItems,
         fetchLists,
@@ -183,6 +245,8 @@ export const useListStore = defineStore('list', () => {
         deleteItemFromList,
         updateItemFromList,
         inviteUserToMyList,
-        removeAUserFromList
+        removeAUserFromList,
+        acceptListInvitationStore,
+        refuseListInvitationStore
     }
 })

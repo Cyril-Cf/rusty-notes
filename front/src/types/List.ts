@@ -9,6 +9,9 @@ export interface List {
     tags: Tag[];
     listType: ListType;
     users: User[];
+    isOwner: boolean;
+    isValidated: boolean;
+    listPermission: ListPermission;
 }
 
 export enum ListType {

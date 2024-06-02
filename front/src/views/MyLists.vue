@@ -1,9 +1,11 @@
 <template>
     <div>
-        <h1>Mes listes</h1>
         <v-container>
             <v-row>
-                <v-col v-for="(list, index) in listStore.lists" :key="index">
+                <v-col cols="12">
+                    <h1>Mes listes</h1>
+                </v-col>
+                <v-col cols="12" v-for="(list, index) in listStore.ownedLists" :key="index">
                     <v-card>
                         <v-card-title>
                             {{ list.name }} (
@@ -26,13 +28,79 @@
                                 }}</v-chip>
                         </v-card-text>
                         <v-card-actions>
-                            <v-btn @click="goToSingleList(index)" color="primary">Détails</v-btn>
-                            <v-btn @click="deleteList(index)" color="error">Supprimer</v-btn>
+                            <v-btn @click="goToSingleList(list.id)" color="primary">Détails</v-btn>
+                            <v-btn @click="deleteList(list.id)" color="error">Supprimer</v-btn>
                             <v-icon @click="openSettings(list)" class="ml-auto">mdi-cog</v-icon>
                         </v-card-actions>
                     </v-card>
                 </v-col>
             </v-row>
+            <v-row v-if="listStore.sharedListsValidated.length > 0">
+                <v-col cols="12">
+                    <h1>Mes listes partagées</h1>
+                </v-col>
+                <v-col cols="12" v-for="(list, index) in listStore.sharedListsValidated" :key="index">
+                    <v-card>
+                        <v-card-title>
+                            {{ list.name }} (
+                            <v-tooltip>
+                                <template v-slot:activator="{ props }">
+                                    <span v-bind="props">{{ list.users.length }} {{ list.users.length > 1 ?
+                                        "utilisateurs" : "utilisateur" }}</span>
+                                </template>
+                                <span>
+                                    <ul>
+                                        <li v-for="user in list.users" :key="user.id.toString()">{{ user.firstname }} {{
+                                            user.lastname }}</li>
+                                    </ul>
+                                </span>
+                            </v-tooltip>
+                            )
+                        </v-card-title>
+                        <v-card-text>
+                            <v-chip v-for="(tag, index) in list.tags" :key="index" class="ma-1" outlined>{{ tag
+                                }}</v-chip>
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-btn @click="goToSingleList(list.id)" color="primary">Détails</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-col>
+            </v-row>
+            <v-row v-if="listStore.sharedListToValidate.length > 0">
+                <v-col cols="12">
+                    <h1>Mes invitations</h1>
+                </v-col>
+                <v-col cols="12" v-for="(list, index) in listStore.sharedListToValidate" :key="index">
+                    <v-card>
+                        <v-card-title>
+                            {{ list.name }} (
+                            <v-tooltip>
+                                <template v-slot:activator="{ props }">
+                                    <span v-bind="props">{{ list.users.length }} {{ list.users.length > 1 ?
+                                        "utilisateurs" : "utilisateur" }}</span>
+                                </template>
+                                <span>
+                                    <ul>
+                                        <li v-for="user in list.users" :key="user.id.toString()">{{ user.firstname }} {{
+                                            user.lastname }}</li>
+                                    </ul>
+                                </span>
+                            </v-tooltip>
+                            )
+                        </v-card-title>
+                        <v-card-text>
+                            <v-chip v-for="(tag, index) in list.tags" :key="index" class="ma-1" outlined>{{ tag
+                                }}</v-chip>
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-btn @click="acceptInvitation(list.id)" color="primary">Accepter de participer</v-btn>
+                            <v-btn @click="refuseInvitation(list.id)" color="error">Refuser de participer</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-col>
+            </v-row>
+
             <v-row>
                 <v-col cols="12">
                     <v-btn @click="showAddListDialog" color="primary">Ajouter une liste</v-btn>
@@ -151,6 +219,18 @@ const headers = [
     { title: 'Action', key: 'action', sortable: false },
 ];
 
+const acceptInvitation = async (listId: String) => {
+    if (userStore.currentUser) {
+        listStore.acceptListInvitationStore(listId, userStore.currentUser.id)
+    }
+}
+
+const refuseInvitation = async (listId: String) => {
+    if (userStore.currentUser) {
+        listStore.refuseListInvitationStore(listId, userStore.currentUser.id)
+    }
+}
+
 const inviteFriendModal = ref(false);
 const closeInviteFriendModal = () => {
     inviteFriendModal.value = false
@@ -176,7 +256,7 @@ interface ListPermissionInSelect {
 }
 
 const listPermissionItems: ListPermissionInSelect[] = [
-    { text: 'Peut voir mais pas modifier', value: ListPermission.CAN_SEE_AND_MODIFY },
+    { text: 'Peut voir mais pas modifier', value: ListPermission.CAN_SEE_BUT_NOT_MODIFY },
     { text: 'Peut voir et modifier (mais pas supprimer)', value: ListPermission.CAN_SEE_BUT_NOT_MODIFY }
 ];
 
@@ -211,9 +291,9 @@ const RemoveFriendConfirm = async () => {
     const listId = selectedList.value?.id;
     if (listId && userStore.currentUser && friendToRemove.value) {
         await listStore.removeAUserFromList(listId, userStore.currentUser?.id, friendToRemove.value.id);
-        selectedList.value = listStore.lists.find(list => list.id === listId);
     }
-    removeFriendModal.value = false
+    removeFriendModal.value = false;
+    settingsDialog.value = false;
 }
 
 const getFriendFullName = (friend: User) => {
@@ -224,19 +304,15 @@ const showAddListDialog = () => {
     router.push({ path: "/add_list" });
 };
 
-const deleteList = async (index: any) => {
+const deleteList = async (listId: String) => {
     const userId = userStore.currentUser?.id;
-    const listId = listStore.lists.at(index)?.id;
     if (userId && listId) {
         await listStore.deleteSelectedList(listId, userId);
     }
 };
 
-const goToSingleList = (index: number) => {
-    const listId = listStore.lists.at(index)?.id;
-    if (listId) {
-        router.push({ path: `/single_list/${listId}` });
-    }
+const goToSingleList = (listId: string) => {
+    router.push({ path: `/single_list/${listId}` });
 };
 
 const openSettings = (list: any) => {

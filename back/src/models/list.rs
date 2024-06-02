@@ -1,4 +1,5 @@
 use super::list_tag::ListTag;
+use super::user_list::ListPermission;
 use super::{item::Item, user::User};
 use diesel::prelude::*;
 use juniper::{GraphQLEnum, GraphQLInputObject, GraphQLObject};
@@ -32,6 +33,9 @@ pub struct ListGraphQL {
     pub tags: Vec<ListTag>,
     pub items: Vec<Item>,
     pub users: Vec<User>,
+    pub is_owner: bool,
+    pub is_validated: bool,
+    pub list_permission: ListPermission,
 }
 
 #[derive(AsChangeset)]
@@ -86,4 +90,16 @@ pub enum RemoveFriendFromMyListStatus {
 pub enum AddListStatus {
     AddSuccessful,
     ErrNoUserFound,
+}
+
+#[derive(Debug, GraphQLEnum)]
+pub enum AcceptListInvitationStatus {
+    AcceptSuccessful,
+    ErrNoInvitationFound,
+}
+
+#[derive(Debug, GraphQLEnum)]
+pub enum RefuseListInvitationStatus {
+    RefuseSuccessful,
+    ErrNoInvitationFound,
 }

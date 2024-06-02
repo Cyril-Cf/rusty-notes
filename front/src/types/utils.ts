@@ -40,3 +40,21 @@ export enum RemoveFriendFromMyListStatus {
     ErrNoUserFriendFound = 'ERR_NO_USER_FRIEND_FOUND',
     ErrServerIssue = 'ERR_SERVER_ISSUE',
 }
+
+export interface RefuseListInvitationResult {
+    status: RefuseListInvitationStatus
+}
+
+export enum RefuseListInvitationStatus {
+    REFUSE_SUCCESSFUL = 'REFUSE_SUCCESSFUL',
+    ERR_NO_INVITATION_FOUND = 'ERR_NO_INVITATION_FOUND',
+}
+
+export interface AcceptListInvitationResult {
+    status: AcceptListInvitationStatus
+}
+
+export enum AcceptListInvitationStatus {
+    ACCEPT_SUCCESSFUL = 'ACCEPT_SUCCESSFUL',
+    ERR_NO_INVITATION_FOUND = 'ERR_NO_INVITATION_FOUND',
+}

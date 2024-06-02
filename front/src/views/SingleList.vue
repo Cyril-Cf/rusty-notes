@@ -1,13 +1,14 @@
 <template>
     <v-container>
         <v-card v-if="listStore.selectedList">
-            <v-card-title>{{ listStore.selectedList.name }}</v-card-title>
+            <v-card-title>{{ listStore.selectedList.name }} - {{ permissionText }}</v-card-title>
             <v-card-text>
                 <template v-for="(item, index) in listStore.selectedItems" :key="index">
                     <v-row class="d-flex align-center ma-1">
                         <v-col>
                             <template v-if="item.itemType === ItemType.CHECKBOX">
-                                <v-checkbox v-model="item.isChecked" @click="updateItem(index)"></v-checkbox>
+                                <v-checkbox v-model="item.isChecked" :readonly="!canModify()"
+                                    @click="updateItem(index)"></v-checkbox>
                             </template>
                             <template v-else-if="item.itemType === ItemType.BULLET_POINT">
                                 <v-icon>mdi-circle-small</v-icon> {{ item.name }}
@@ -16,13 +17,13 @@
                         <v-col v-if="item.itemType === ItemType.CHECKBOX">
                             {{ item.name }}
                         </v-col>
-                        <v-col>
+                        <v-col v-if="canModify()">
                             <v-icon @click="deleteItem(index)" class="ml-1">mdi-close</v-icon>
                         </v-col>
                     </v-row>
                 </template>
             </v-card-text>
-            <v-card-actions>
+            <v-card-actions v-if="canModify()">
                 <v-btn color="primary" @click="addItemDialog = true">Ajouter un élément</v-btn>
                 <v-btn color="error" @click="deleteList">Supprimer la liste</v-btn>
             </v-card-actions>
@@ -48,11 +49,12 @@
 <script lang="ts" setup>
 import { useListStore } from "@/store/listStore";
 import { useUserStore } from "@/store/userStore";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import authPromise from "@/plugins/keycloak";
 import router from "@/router";
 import { useRoute } from 'vue-router';
 import { NewItem, ItemType, Item } from '@/types/Item';
+import { ListPermission } from "@/types/List";
 
 const userStore = useUserStore();
 const listStore = useListStore();
@@ -69,6 +71,26 @@ interface ItemTypeInSelect {
     text: String;
     value: String;
 }
+
+const canModify = () => {
+    if (listStore.selectedList?.isOwner || listStore.selectedList?.listPermission === ListPermission.CAN_SEE_AND_MODIFY) {
+        return true;
+    }
+    return false
+}
+
+const permissionText = computed(() => {
+    if (listStore.selectedList?.isOwner) {
+        return 'Propriétaire';
+    }
+    if (listStore.selectedList?.listPermission === ListPermission.CAN_SEE_AND_MODIFY) {
+        return 'Invité (peut modifier)';
+    }
+    if (listStore.selectedList?.listPermission === ListPermission.CAN_SEE_BUT_NOT_MODIFY) {
+        return 'Invité (ne peut pas modifier)';
+    }
+    return ''
+});
 
 const deleteList = async () => {
     const userId = userStore.currentUser?.id;
@@ -129,6 +151,4 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped>
-/* Ajoutez votre style personnalisé ici */
-</style>
+<style scoped></style>
