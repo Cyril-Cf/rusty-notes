@@ -132,6 +132,7 @@ impl Actor for NotificationServer {
 pub enum MessageType {
     RefreshFriendships,
     RefreshLists,
+    RefreshSelectedList,
 }
 
 impl fmt::Display for MessageType {
@@ -139,6 +140,7 @@ impl fmt::Display for MessageType {
         match *self {
             MessageType::RefreshFriendships => write!(f, "RefreshFriendships"),
             MessageType::RefreshLists => write!(f, "RefreshLists"),
+            MessageType::RefreshSelectedList => write!(f, "RefreshSelectedList"),
         }
     }
 }

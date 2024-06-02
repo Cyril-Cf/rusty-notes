@@ -1,4 +1,5 @@
 export enum WebSocketMessage {
     RefreshFriendships = "RefreshFriendships",
-    RefreshLists = "RefreshLists"
+    RefreshLists = "RefreshLists",
+    RefreshSelectedList = "RefreshSelectedList"
 }

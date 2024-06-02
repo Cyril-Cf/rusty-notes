@@ -30,6 +30,7 @@ import authPromise from "@/plugins/keycloak";
 import { useUserStore } from "@/store/userStore";
 import { useNotificationStore } from "@/store/notificationStore";
 import { WebSocketMessage } from "@/types/WebSocketMessage";
+import { useListStore } from "@/store/listStore";
 
 const userStore = useUserStore();
 let ws: WebSocket | null = null;
@@ -74,6 +75,7 @@ onMounted(async () => {
   authPromise.then(async (auth) => {
     if (auth.isAuthenticated()) {
       const userStore = useUserStore();
+      const listStore = useListStore();
       const notificationStore = useNotificationStore();
       let userIsInDB = await userStore.DoesUserExistInDB(auth.userId()!);
       if (userIsInDB && userStore.currentUser) {
@@ -84,8 +86,11 @@ onMounted(async () => {
           let message: WebSocketMessage = event.data;
           if (message == WebSocketMessage.RefreshFriendships) {
             await userStore.getFriendships(userStore.currentUser!.id);
+          } else if (message == WebSocketMessage.RefreshSelectedList) {
+            console.log('refresh selected list');
+            await listStore.fetchOne(listStore.selectedList!.id);
           } else if (message == WebSocketMessage.RefreshLists) {
-
+            await listStore.fetchLists(userStore.currentUser!.id);
           }
         };
       }

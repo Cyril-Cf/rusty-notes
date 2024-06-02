@@ -162,7 +162,7 @@ impl Mutation {
     // LIST
     pub fn create_list(context: &GraphQLContext, input: CreateList) -> FieldResult<AddListResult> {
         let conn = &mut context.pool.get()?;
-        let res = list_service::create_list(conn, input);
+        let res = list_service::create_list(conn, input, &context.notification_server);
         graphql_translate(res)
     }
     // pub fn update_list(context: &GraphQLContext, input: String) -> FieldResult<String> {
@@ -170,7 +170,7 @@ impl Mutation {
     // }
     pub fn delete_list(context: &GraphQLContext, list_id: Uuid) -> FieldResult<DeleteResult> {
         let conn = &mut context.pool.get()?;
-        let res = list_service::delete_list(conn, list_id);
+        let res = list_service::delete_list(conn, list_id, &context.notification_server);
         graphql_translate(res)
     }
     pub fn invite_user_to_your_list(
@@ -181,8 +181,14 @@ impl Mutation {
         permission: ListPermission,
     ) -> FieldResult<AddFriendToMyListResult> {
         let conn = &mut context.pool.get()?;
-        let res =
-            list_service::invite_user_to_your_list(conn, list_id, user_id, friend_id, permission);
+        let res = list_service::invite_user_to_your_list(
+            conn,
+            list_id,
+            user_id,
+            friend_id,
+            permission,
+            &context.notification_server,
+        );
         graphql_translate(res)
     }
     pub fn remove_user_from_list(
@@ -191,7 +197,12 @@ impl Mutation {
         friend_id: Uuid,
     ) -> FieldResult<RemoveFriendFromMyListResult> {
         let conn = &mut context.pool.get()?;
-        let res = list_service::remove_user_from_list(conn, list_id, friend_id);
+        let res = list_service::remove_user_from_list(
+            conn,
+            list_id,
+            friend_id,
+            &context.notification_server,
+        );
         graphql_translate(res)
     }
     pub fn accept_list_invitation(
@@ -200,7 +211,12 @@ impl Mutation {
         user_id: Uuid,
     ) -> FieldResult<AcceptListInvitationResult> {
         let conn = &mut context.pool.get()?;
-        let res = list_service::accept_list_invitation(conn, list_id, user_id);
+        let res = list_service::accept_list_invitation(
+            conn,
+            list_id,
+            user_id,
+            &context.notification_server,
+        );
         graphql_translate(res)
     }
 
@@ -210,7 +226,12 @@ impl Mutation {
         user_id: Uuid,
     ) -> FieldResult<RefuseListInvitationResult> {
         let conn = &mut context.pool.get()?;
-        let res = list_service::refuse_list_invitation(conn, list_id, user_id);
+        let res = list_service::refuse_list_invitation(
+            conn,
+            list_id,
+            user_id,
+            &context.notification_server,
+        );
         graphql_translate(res)
     }
 
@@ -230,17 +251,17 @@ impl Mutation {
     // ITEM
     pub fn create_item(context: &GraphQLContext, input: CreateItem) -> FieldResult<Item> {
         let conn = &mut context.pool.get()?;
-        let res = item_service::create_item(conn, input);
+        let res = item_service::create_item(conn, input, &context.notification_server);
         graphql_translate(res)
     }
     pub fn update_item(context: &GraphQLContext, input: UpdateItem) -> FieldResult<UpdateResult> {
         let conn = &mut context.pool.get()?;
-        let res = item_service::update_item(conn, input);
+        let res = item_service::update_item(conn, input, &context.notification_server);
         graphql_translate(res)
     }
     pub fn delete_item(context: &GraphQLContext, item_id: Uuid) -> FieldResult<DeleteResult> {
         let conn = &mut context.pool.get()?;
-        let res = item_service::delete_item(conn, item_id);
+        let res = item_service::delete_item(conn, item_id, &context.notification_server);
         graphql_translate(res)
     }
 
