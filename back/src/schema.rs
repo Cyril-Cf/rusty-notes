@@ -6,6 +6,10 @@ pub mod sql_types {
     pub struct ItemType;
 
     #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "list_permission"))]
+    pub struct ListPermission;
+
+    #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
     #[diesel(postgres_type(name = "list_type"))]
     pub struct ListType;
 
@@ -68,9 +72,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use super::sql_types::ListPermission;
+
     user_lists (user_id, list_id) {
         user_id -> Uuid,
         list_id -> Uuid,
+        is_owner -> Bool,
+        is_validated -> Bool,
+        list_permission -> ListPermission,
     }
 }
 

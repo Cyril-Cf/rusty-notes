@@ -13,6 +13,20 @@ use uuid::Uuid;
 pub struct UserList {
     pub user_id: Uuid,
     pub list_id: Uuid,
+    pub is_owner: bool,
+    pub is_validated: bool,
+    pub list_permission: ListPermission,
+}
+
+#[derive(diesel_derive_enum::DbEnum, Debug, GraphQLEnum, Clone, PartialEq)]
+#[ExistingTypePath = "crate::schema::sql_types::ListPermission"]
+pub enum ListPermission {
+    #[db_rename = "OWNER"]
+    Owner,
+    #[db_rename = "CAN_SEE_BUT_NOT_MODIFY"]
+    CanSeeButNotModify,
+    #[db_rename = "CAN_SEE_AND_MODIFY"]
+    CanSeeAndModify,
 }
 
 #[derive(Insertable)]
@@ -20,6 +34,9 @@ pub struct UserList {
 pub struct NewUserList {
     pub user_id: Uuid,
     pub list_id: Uuid,
+    pub is_owner: bool,
+    pub is_validated: bool,
+    pub list_permission: ListPermission,
 }
 
 #[derive(Debug, GraphQLEnum)]

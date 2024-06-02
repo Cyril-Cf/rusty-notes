@@ -10,7 +10,7 @@ import { findAllListForUserWithTags } from '../graphql/queries/findAllListForUse
 import { findOneWithItemsAndTags } from '../graphql/queries/findOneWithItemsAndTags.query'
 import { createList } from '../graphql/mutations/createList.mutation'
 import { deleteList } from '../graphql/mutations/deleteList.mutation'
-import { List, NewList } from '../types/List';
+import { List, ListPermission, NewList } from '../types/List';
 import { NewItem, Item } from '../types/Item'
 import { DeleteStatus, DeleteResult, AddFriendToMyListStatus, AddFriendToMyListResult, RemoveFriendFromMyListResult, RemoveFriendFromMyListStatus } from '@/types/utils';
 import { toast } from 'vue3-toastify';
@@ -126,10 +126,10 @@ export const useListStore = defineStore('list', () => {
         }
     }
 
-    async function inviteUserToMyList(listId: String, userId: String, friendId: String) {
+    async function inviteUserToMyList(listId: String, userId: String, friendId: String, permission: ListPermission) {
         const { data } = await apolloClient.mutate({
             mutation: inviteUserToYourList,
-            variables: { listId, userId, friendId },
+            variables: { listId, userId, friendId, permission },
             fetchPolicy: 'no-cache'
         });
         if (data && data.inviteUserToYourList) {

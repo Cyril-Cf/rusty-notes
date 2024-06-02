@@ -1,12 +1,11 @@
 use super::context::GraphQLContext;
-use crate::models::friendship::{
-    AddFriendStatus, FriendshipAcceptingStatus, FriendshipGraphQL, RemoveFriendStatus,
-};
+use crate::models::friendship::FriendshipGraphQL;
 use crate::models::item::{CreateItem, Item, UpdateItem};
 use crate::models::list::{CreateList, ListGraphQL};
 use crate::models::list_tag::{CreateListTag, ListTag};
 use crate::models::notification::{CreateNotification, Notification, UpdateNotificationGQL};
-use crate::models::user::{self, CreateUser, ModifyUser, User};
+use crate::models::user::{CreateUser, ModifyUser, User};
+use crate::models::user_list::ListPermission;
 use crate::services::friendship_service::{
     self, AcceptFriendshipResult, AddFriendshipResult, RemoveFriendshipResult,
 };
@@ -177,9 +176,11 @@ impl Mutation {
         list_id: Uuid,
         user_id: Uuid,
         friend_id: Uuid,
+        permission: ListPermission,
     ) -> FieldResult<AddFriendToMyListResult> {
         let conn = &mut context.pool.get()?;
-        let res = list_service::invite_user_to_your_list(conn, list_id, user_id, friend_id);
+        let res =
+            list_service::invite_user_to_your_list(conn, list_id, user_id, friend_id, permission);
         graphql_translate(res)
     }
     pub fn remove_user_from_list(

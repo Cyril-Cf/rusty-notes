@@ -67,7 +67,15 @@
                                                         <v-select :items="friendsToInvite"
                                                             :item-title="getFriendFullName" item-value="id"
                                                             no-data-text="Personne à ajouter" v-model="selectedFriend"
+                                                            :rules="[rules.required]" required
                                                             label="Sélectionner un ami"></v-select>
+                                                    </v-col>
+                                                    <v-col cols="12" md="12" sm="12">
+                                                        <v-select :items="listPermissionItems"
+                                                            v-model="selectedPermission" label="Permissions"
+                                                            item-title="text" item-value="value"
+                                                            :rules="[rules.required]" return-object single-line
+                                                            required></v-select>
                                                     </v-col>
                                                 </v-row>
                                             </v-container>
@@ -123,7 +131,7 @@ import { useListStore } from "@/store/listStore";
 import { useUserStore } from "@/store/userStore";
 import authPromise from "@/plugins/keycloak";
 import router from "@/router";
-import { List } from '@/types/List';
+import { List, ListPermission } from '@/types/List';
 import { VDataTable } from 'vuetify/labs/VDataTable'
 import { User } from '@/types/User';
 
@@ -148,13 +156,29 @@ const closeInviteFriendModal = () => {
     inviteFriendModal.value = false
 }
 const saveInviteFriendModal = async () => {
-    if (selectedList.value && userStore.currentUser && selectedFriend.value) {
-        await listStore.inviteUserToMyList(selectedList.value.id, userStore.currentUser?.id.valueOf(), selectedFriend.value);
+    if (selectedList.value && userStore.currentUser && selectedFriend.value && selectedPermission.value) {
+        await listStore.inviteUserToMyList(selectedList.value.id, userStore.currentUser?.id.valueOf(), selectedFriend.value, selectedPermission.value.value as ListPermission);
     }
     inviteFriendModal.value = false;
     settingsDialog.value = false;
 }
 
+const selectedPermission = ref<ListPermissionInSelect | null>(null);
+
+const rules = {
+    required: (value: string) => !!value || 'Ce champ est requis'
+};
+
+
+interface ListPermissionInSelect {
+    text: String;
+    value: String;
+}
+
+const listPermissionItems: ListPermissionInSelect[] = [
+    { text: 'Peut voir mais pas modifier', value: ListPermission.CAN_SEE_AND_MODIFY },
+    { text: 'Peut voir et modifier (mais pas supprimer)', value: ListPermission.CAN_SEE_BUT_NOT_MODIFY }
+];
 
 
 const removeFriend = (friend: User) => {

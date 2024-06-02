@@ -8,7 +8,7 @@ use crate::models::list::{
 use crate::models::list_tag::ListTag;
 use crate::models::user::User;
 use crate::models::user_list::{
-    AddUserToListStatus, NewUserList, RemoveUserFromListStatus, UserList,
+    AddUserToListStatus, ListPermission, NewUserList, RemoveUserFromListStatus, UserList,
 };
 use crate::schema::items::dsl::{items, list_id as ItemListId};
 use crate::schema::list_tags::dsl::{list_id as ListTagListId, list_tags};
@@ -149,8 +149,17 @@ fn link_list_to_user(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     list_id: Uuid,
     user_id: Uuid,
+    is_owner: bool,
+    permission: ListPermission,
 ) -> Result<AddUserToListStatus, diesel::result::Error> {
-    let new_link = NewUserList { user_id, list_id };
+    let is_validated = if is_owner { true } else { false };
+    let new_link = NewUserList {
+        user_id,
+        list_id,
+        is_owner,
+        is_validated,
+        list_permission: permission,
+    };
     diesel::insert_into(user_lists)
         .values(&new_link)
         .execute(conn)?;
@@ -183,7 +192,7 @@ pub fn create_list(
     let list = diesel::insert_into(lists)
         .values(&new_list)
         .get_result::<List>(conn)?;
-    match link_list_to_user(conn, list.id, input.user_id)? {
+    match link_list_to_user(conn, list.id, input.user_id, true, ListPermission::Owner)? {
         AddUserToListStatus::ErrCannotAdd => Ok(AddListResult {
             status: AddListStatus::ErrNoUserFound,
         }),
@@ -217,6 +226,7 @@ pub fn invite_user_to_your_list(
     list_id: Uuid,
     user_id: Uuid,
     friend_id: Uuid,
+    permission: ListPermission,
 ) -> Result<AddFriendToMyListResult, diesel::result::Error> {
     let main_user = user_service::find_user(conn, user_id)?;
     let friend_user = user_service::find_user(conn, friend_id)?;
@@ -243,7 +253,7 @@ pub fn invite_user_to_your_list(
                     status: AddFriendToMyListStatus::ErrNoListFound,
                 });
             }
-            match link_list_to_user(conn, list_id, friend_id)? {
+            match link_list_to_user(conn, list_id, friend_id, false, permission)? {
                 AddUserToListStatus::ErrCannotAdd => Ok(AddFriendToMyListResult {
                     status: AddFriendToMyListStatus::ErrServerIssue,
                 }),
