@@ -1,20 +1,20 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { apolloClient } from '../apollo'
-import { acceptListInvitation } from '@/graphql/mutations/acceptListInvitation.mutation'
-import { refuseListInvitation } from '@/graphql/mutations/refuseListInvitation.mutation'
-import { updateItem } from '../graphql/mutations/updateItem.mutation'
-import { deleteItem } from '../graphql/mutations/deleteItem.mutation'
-import { createItem } from '../graphql/mutations/createItem.mutation'
-import { inviteUserToYourList } from '@/graphql/mutations/inviteUserToYourList.mutation'
-import { removeUserFromList } from '@/graphql/mutations/removeUserFromList.mutation'
-import { findAllListForUserWithTags } from '../graphql/queries/findAllListForUserWithTags.query';
-import { findOneWithItemsAndTags } from '../graphql/queries/findOneWithItemsAndTags.query'
-import { createList } from '../graphql/mutations/createList.mutation'
-import { deleteList } from '../graphql/mutations/deleteList.mutation'
+import { acceptListInvitation } from '@/graphql/mutations/list/acceptListInvitation.mutation'
+import { refuseListInvitation } from '@/graphql/mutations/user/refuseListInvitation.mutation'
+import { updateItem } from '../graphql/mutations/item/updateItem.mutation'
+import { deleteItem } from '../graphql/mutations/item/deleteItem.mutation'
+import { createItem } from '../graphql/mutations/item/createItem.mutation'
+import { inviteUserToYourList } from '@/graphql/mutations/userList/inviteUserToYourList.mutation'
+import { removeUserFromList } from '@/graphql/mutations/userList/removeUserFromList.mutation'
+import { findAllListForUserWithTags } from '../graphql/queries/list/findAllListForUserWithTags.query';
+import { findOneWithItemsAndTags } from '../graphql/queries/list/findOneWithItemsAndTags.query'
+import { createList } from '../graphql/mutations/list/createList.mutation'
+import { deleteList } from '../graphql/mutations/list/deleteList.mutation'
 import { List, ListPermission, NewList } from '../types/List';
 import { NewItem, Item } from '../types/Item'
-import { DeleteStatus, DeleteResult, AddFriendToMyListStatus, AddFriendToMyListResult, RemoveFriendFromMyListResult, RemoveFriendFromMyListStatus, RefuseListInvitationResult, RefuseListInvitationStatus, AcceptListInvitationResult, AcceptListInvitationStatus } from '@/types/utils';
+import { DeleteStatus, DeleteResult, AddFriendToMyListStatus, AddFriendToMyListResult, RemoveFriendFromMyListResult, RemoveFriendFromMyListStatus, RefuseListInvitationResult, RefuseListInvitationStatus, AcceptListInvitationResult, AcceptListInvitationStatus } from '@/types/Utils';
 import { toast } from 'vue3-toastify';
 import { useUserStore } from './userStore'
 import { User } from '@/types/User'
@@ -160,7 +160,7 @@ export const useListStore = defineStore('list', () => {
         if (data && data.inviteUserToYourList) {
             const res: AddFriendToMyListResult = data.inviteUserToYourList;
             if (res.status == AddFriendToMyListStatus.AddSuccessful) {
-                toast.success("Votre ami peut voir la liste !", {
+                toast.success("Invitation envoyée !", {
                     position: toast.POSITION.BOTTOM_CENTER,
                 });
                 await fetchLists(userId);

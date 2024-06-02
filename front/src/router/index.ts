@@ -1,4 +1,3 @@
-// Composables
 import { createRouter, createWebHistory, RouteLocationRaw } from 'vue-router'
 import authPromise from '@/plugins/keycloak'
 

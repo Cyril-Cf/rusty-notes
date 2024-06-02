@@ -1,12 +1,12 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { apolloClient } from '../apollo'
-import { findUserWithKeycloakId } from '../graphql/queries/findUserWithKeycloakId.query';
-import { addUserFriend } from '@/graphql/mutations/addUserFriend.mutation';
-import { getUserFriendships } from '@/graphql/queries/getUserFriendships.query';
-import { confirmFriendship } from '@/graphql/mutations/confirmFriendship.mutation';
-import { removeUserFriend } from '@/graphql/mutations/removeUserFriend.mutation';
-import { createUser } from '@/graphql/mutations/createUser.mutation';
+import { findUserWithKeycloakId } from '../graphql/queries/user/findUserWithKeycloakId.query';
+import { addUserFriend } from '@/graphql/mutations/user/addUserFriend.mutation';
+import { getUserFriendships } from '@/graphql/queries/user/getUserFriendships.query';
+import { confirmFriendship } from '@/graphql/mutations/user/confirmFriendship.mutation';
+import { removeUserFriend } from '@/graphql/mutations/user/removeUserFriend.mutation';
+import { createUser } from '@/graphql/mutations/user/createUser.mutation';
 import { User, NewUser } from '../types/User'
 import { AddFriendResult, AddFriendStatus, Friendship, FriendshipAcceptingResult, FriendshipAcceptingStatus, RemoveFriendResult, RemoveFriendStatus } from '@/types/Friendship';
 import { toast } from 'vue3-toastify';

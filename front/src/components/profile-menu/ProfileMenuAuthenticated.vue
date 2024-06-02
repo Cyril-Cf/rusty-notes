@@ -87,7 +87,6 @@ onMounted(async () => {
           if (message == WebSocketMessage.RefreshFriendships) {
             await userStore.getFriendships(userStore.currentUser!.id);
           } else if (message == WebSocketMessage.RefreshSelectedList) {
-            console.log('refresh selected list');
             await listStore.fetchOne(listStore.selectedList!.id);
           } else if (message == WebSocketMessage.RefreshLists) {
             await listStore.fetchLists(userStore.currentUser!.id);

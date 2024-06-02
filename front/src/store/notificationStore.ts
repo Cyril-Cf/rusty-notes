@@ -2,10 +2,10 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { apolloClient } from '../apollo'
 import { Notification, NotifType } from '../types/Notification';
-import { UpdateResult, UpdateStatus } from '@/types/utils';
+import { UpdateResult, UpdateStatus } from '@/types/Utils';
 import { toast } from 'vue3-toastify';
-import { findAllNotificationsForUser } from '@/graphql/queries/findAllNotificationsForUser.query';
-import { updateNotification } from '@/graphql/mutations/updateNotification.mutation';
+import { findAllNotificationsForUser } from '@/graphql/queries/notification/findAllNotificationsForUser.query';
+import { updateNotification } from '@/graphql/mutations/notification/updateNotification.mutation';
 
 export const useNotificationStore = defineStore('notification', () => {
     const notifications = ref<Notification[]>([]);
