@@ -9,7 +9,9 @@ use crate::schema::friendships::dsl::{
     user_who_got_asked_id as friendship_id_2,
 };
 use crate::services::notification_service;
-use crate::{MessageType, NotificationServer, SendFriendshipNotification};
+use crate::web_socket_logic::web_socket::{
+    MessageType, NotificationServer, SendFriendshipNotification,
+};
 use actix::Addr;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;

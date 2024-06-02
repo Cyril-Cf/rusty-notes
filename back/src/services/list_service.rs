@@ -20,7 +20,9 @@ use crate::schema::user_lists::dsl::{
 use crate::schema::users::dsl::users;
 use crate::services::friendship_service;
 use crate::services::user_service;
-use crate::{MessageType, NotificationServer, SendFriendshipNotification};
+use crate::web_socket_logic::web_socket::{
+    MessageType, NotificationServer, SendFriendshipNotification,
+};
 use actix::Addr;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;

@@ -2,7 +2,9 @@ use crate::graphql_logic::graphql::{DeleteResult, DeleteStatus, UpdateResult, Up
 use crate::models::item::{CreateItem, Item, NewItem, UpdateItem};
 use crate::schema::items::dsl::{id, items};
 use crate::services::list_service;
-use crate::{MessageType, NotificationServer, SendFriendshipNotification};
+use crate::web_socket_logic::web_socket::{
+    MessageType, NotificationServer, SendFriendshipNotification,
+};
 use actix::Addr;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
