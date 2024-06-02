@@ -4,6 +4,7 @@ use crate::models::item::Item;
 use crate::models::list::{
     AcceptListInvitationStatus, AddFriendToMyListStatus, AddListStatus, CreateList, List,
     ListGraphQL, NewList, RefuseListInvitationStatus, RemoveFriendFromMyListStatus,
+    UserListGraphQL,
 };
 use crate::models::list_tag::ListTag;
 use crate::models::user::User;
@@ -102,8 +103,34 @@ fn enrich_list_with_relations(
             list_type: list.list_type.clone(),
             name: list.name.clone(),
         };
-        let all_users: Vec<User> = get_users_for_list(conn, list_objet)?;
-        list.users = all_users;
+        let mut user_validated: Vec<UserListGraphQL> = Vec::new();
+        let mut users_awaiting_validation: Vec<UserListGraphQL> = Vec::new();
+        for user in get_users_for_list(conn, list_objet.clone(), true)? {
+            if let Some(user_list) = get_list_user_association(conn, list.id, user.id)? {
+                user_validated.push(UserListGraphQL {
+                    list_permission: user_list.list_permission,
+                    email: user.email,
+                    firstname: user.firstname,
+                    id: user.id,
+                    keycloak_uuid: user.keycloak_uuid,
+                    lastname: user.lastname,
+                });
+            }
+        }
+        list.users_validated = user_validated;
+        for user in get_users_for_list(conn, list_objet, false)? {
+            if let Some(user_list) = get_list_user_association(conn, list.id, user.id)? {
+                users_awaiting_validation.push(UserListGraphQL {
+                    list_permission: user_list.list_permission,
+                    email: user.email,
+                    firstname: user.firstname,
+                    id: user.id,
+                    keycloak_uuid: user.keycloak_uuid,
+                    lastname: user.lastname,
+                });
+            }
+        }
+        list.users_awaiting_validation = users_awaiting_validation;
     }
     Ok(())
 }
@@ -111,8 +138,10 @@ fn enrich_list_with_relations(
 pub fn get_users_for_list(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     list: List,
+    validated: bool,
 ) -> Result<Vec<User>, diesel::result::Error> {
     UserList::belonging_to(&list)
+        .filter(is_validated.eq(validated))
         .inner_join(users)
         .select(User::as_select())
         .load::<User>(conn)
@@ -139,7 +168,8 @@ pub fn find_all_list_for_user_with_tags(
             list_permission: association_table_values.list_permission,
             tags: Vec::new(),
             items: Vec::new(),
-            users: Vec::new(),
+            users_awaiting_validation: Vec::new(),
+            users_validated: Vec::new(),
         };
         enrich_list_with_relations(conn, &mut current_list, true, false, true)?;
         list_graphqls.push(current_list);
@@ -167,7 +197,8 @@ pub fn find_one_with_items_and_tags(
         list_permission: association_table_values.list_permission,
         tags: Vec::new(),
         items: Vec::new(),
-        users: Vec::new(),
+        users_awaiting_validation: Vec::new(),
+        users_validated: Vec::new(),
     };
     enrich_list_with_relations(conn, &mut res, true, true, true)?;
     Ok(Some(res))
@@ -254,7 +285,7 @@ pub fn delete_list(
 ) -> Result<DeleteResult, diesel::result::Error> {
     match find_one(conn, list_id)? {
         Some(list) => {
-            let all_users = get_users_for_list(conn, list)?;
+            let all_users = get_users_for_list(conn, list, true)?;
             diesel::delete(list_tags.filter(ListTagListId.eq(list_id))).execute(conn)?;
             diesel::delete(items.filter(ItemListId.eq(list_id))).execute(conn)?;
             diesel::delete(user_lists.filter(UserList_list_id.eq(list_id))).execute(conn)?;
@@ -397,10 +428,13 @@ pub fn accept_list_invitation(
             )
             .set(is_validated.eq(true))
             .execute(conn)?;
-            notification_server.do_send(SendFriendshipNotification {
-                user_id,
-                message: MessageType::RefreshLists,
-            });
+            let list = find_one(conn, list_id)?.unwrap();
+            for user in get_users_for_list(conn, list, true)? {
+                notification_server.do_send(SendFriendshipNotification {
+                    user_id: user.id,
+                    message: MessageType::RefreshLists,
+                });
+            }
             Ok(AcceptListInvitationResult {
                 status: AcceptListInvitationStatus::AcceptSuccessful,
             })
@@ -427,10 +461,13 @@ pub fn refuse_list_invitation(
                 ),
             )
             .execute(conn)?;
-            notification_server.do_send(SendFriendshipNotification {
-                user_id,
-                message: MessageType::RefreshLists,
-            });
+            let list = find_one(conn, list_id)?.unwrap();
+            for user in get_users_for_list(conn, list, true)? {
+                notification_server.do_send(SendFriendshipNotification {
+                    user_id: user.id,
+                    message: MessageType::RefreshLists,
+                });
+            }
             Ok(RefuseListInvitationResult {
                 status: RefuseListInvitationStatus::RefuseSuccessful,
             })

@@ -20,11 +20,19 @@ export const findOneWithItemsAndTags = gql`
                 id
                 name
             }
-            users {
+            usersValidated {
                 id
                 firstname
                 lastname
                 email
+                listPermission
+            }
+            usersAwaitingValidation {
+                id
+                firstname
+                lastname
+                email
+                listPermission
             }
         }
     }

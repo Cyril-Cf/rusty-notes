@@ -8,20 +8,26 @@
                 <v-col cols="12" v-for="(list, index) in listStore.ownedLists" :key="index">
                     <v-card>
                         <v-card-title>
-                            {{ list.name }} (
-                            <v-tooltip>
+                            {{ list.name }} (<v-tooltip>
                                 <template v-slot:activator="{ props }">
-                                    <span v-bind="props">{{ list.users.length }} {{ list.users.length > 1 ?
-                                        "utilisateurs" : "utilisateur" }}</span>
+                                    <span v-bind="props">{{ list.usersValidated.length +
+                                        list.usersAwaitingValidation.length }} {{ (list.usersValidated.length +
+                                            list.usersAwaitingValidation.length) > 1 ?
+                                            "utilisateurs" : "utilisateur" }}</span>
                                 </template>
                                 <span>
                                     <ul>
-                                        <li v-for="user in list.users" :key="user.id.toString()">{{ user.firstname }} {{
-                                            user.lastname }}</li>
+                                        <li v-for="user in list.usersValidated" :key="user.id.toString()">{{
+                                            user.firstname }} {{
+                                                user.lastname }}</li>
+                                    </ul>
+                                    <ul>
+                                        <li v-for="user in list.usersAwaitingValidation" :key="user.id.toString()">{{
+                                            user.firstname }} {{
+                                                user.lastname }} (en attente de validation)</li>
                                     </ul>
                                 </span>
-                            </v-tooltip>
-                            )
+                            </v-tooltip>)
                         </v-card-title>
                         <v-card-text>
                             <v-chip v-for="(tag, index) in list.tags" :key="index" class="ma-1" outlined>{{ tag
@@ -45,13 +51,21 @@
                             {{ list.name }} (
                             <v-tooltip>
                                 <template v-slot:activator="{ props }">
-                                    <span v-bind="props">{{ list.users.length }} {{ list.users.length > 1 ?
-                                        "utilisateurs" : "utilisateur" }}</span>
+                                    <span v-bind="props">{{ list.usersValidated.length +
+                                        list.usersAwaitingValidation.length }} {{ (list.usersValidated.length +
+                                            list.usersAwaitingValidation.length) > 1 ?
+                                            "utilisateurs" : "utilisateur" }}</span>
                                 </template>
                                 <span>
                                     <ul>
-                                        <li v-for="user in list.users" :key="user.id.toString()">{{ user.firstname }} {{
-                                            user.lastname }}</li>
+                                        <li v-for="user in list.usersValidated" :key="user.id.toString()">{{
+                                            user.firstname }} {{
+                                                user.lastname }}</li>
+                                    </ul>
+                                    <ul>
+                                        <li v-for="user in list.usersAwaitingValidation" :key="user.id.toString()">{{
+                                            user.firstname }} {{
+                                                user.lastname }} (en attente de validation)</li>
                                     </ul>
                                 </span>
                             </v-tooltip>
@@ -77,13 +91,21 @@
                             {{ list.name }} (
                             <v-tooltip>
                                 <template v-slot:activator="{ props }">
-                                    <span v-bind="props">{{ list.users.length }} {{ list.users.length > 1 ?
-                                        "utilisateurs" : "utilisateur" }}</span>
+                                    <span v-bind="props">{{ list.usersValidated.length +
+                                        list.usersAwaitingValidation.length }} {{ (list.usersValidated.length +
+                                            list.usersAwaitingValidation.length) > 1 ?
+                                            "utilisateurs" : "utilisateur" }}</span>
                                 </template>
                                 <span>
                                     <ul>
-                                        <li v-for="user in list.users" :key="user.id.toString()">{{ user.firstname }} {{
-                                            user.lastname }}</li>
+                                        <li v-for="user in list.usersValidated" :key="user.id.toString()">{{
+                                            user.firstname }} {{
+                                                user.lastname }}</li>
+                                    </ul>
+                                    <ul>
+                                        <li v-for="user in list.usersAwaitingValidation" :key="user.id.toString()">{{
+                                            user.firstname }} {{
+                                                user.lastname }} (en attente de validation)</li>
                                     </ul>
                                 </span>
                             </v-tooltip>
@@ -111,7 +133,7 @@
         <v-dialog v-model="settingsDialog" max-width="600">
             <v-card>
                 <v-card-text>
-                    <v-data-table :headers="headers" :items="selectedList?.users">
+                    <v-data-table :headers="headers" :items="usersItem">
                         <template v-slot:top>
                             <v-toolbar flat>
                                 <v-toolbar-title>Utilisateurs</v-toolbar-title>
@@ -162,7 +184,7 @@
                                 </v-dialog>
                                 <v-dialog v-model="removeFriendModal" max-width="500px">
                                     <v-card>
-                                        <v-card-title class="text-h5">Etes vous certain de vouloir retirer cet ami de la
+                                        <v-card-title class="text-h5">Retirer cet ami de la
                                             liste ?</v-card-title>
                                         <v-card-actions>
                                             <v-spacer></v-spacer>
@@ -180,6 +202,23 @@
                             <v-icon v-if="showDeletebutton(item)" color="black" size="small"
                                 @click="removeFriend(item)">
                                 mdi-delete
+                            </v-icon>
+                        </template>
+                        <template v-slot:item.status="{ item }">
+                            <v-icon :color="getStatusColor(item)" size="small">
+                                {{ getStatusIcon(item) }}
+                            </v-icon>
+                        </template>
+                        <template v-slot:item.permission="{ item }">
+                            <v-icon v-for="permission in getPermissionIcons(item)" :key="permission.text" color="grey"
+                                size="small"><v-tooltip>
+                                    <template v-slot:activator="{ props }">
+                                        <span v-bind="props"><v-icon color="grey" size="small">
+                                                {{ permission.text }}
+                                            </v-icon></span>
+                                    </template>
+                                    <span>{{ permission.tooltip }}</span>
+                                </v-tooltip>
                             </v-icon>
                         </template>
                     </v-data-table>
@@ -213,11 +252,23 @@ const friendToRemove = ref<User | null>(null);
 const removeFriendModal = ref(false)
 
 const headers = [
-    { title: 'Nom', key: 'firstname', sortable: false },
-    { title: 'Prénom', key: 'lastname', sortable: false },
+    { title: 'Nom', key: 'fullname', sortable: false },
     { title: 'Email', key: 'email', sortable: false },
+    { title: 'Droit', key: 'permission', sortable: false },
+    { title: 'Statut', key: 'status', sortable: false },
     { title: 'Action', key: 'action', sortable: false },
 ];
+
+interface userItem {
+    id: String;
+    firstname: String;
+    lastname: String;
+    fullname: String;
+    email: String;
+    keycloakUuid: String;
+    validated: boolean;
+    permission: ListPermission
+}
 
 const acceptInvitation = async (listId: String) => {
     if (userStore.currentUser) {
@@ -228,6 +279,51 @@ const acceptInvitation = async (listId: String) => {
 const refuseInvitation = async (listId: String) => {
     if (userStore.currentUser) {
         listStore.refuseListInvitationStore(listId, userStore.currentUser.id)
+    }
+}
+
+const usersItem = computed(() => {
+    let array: userItem[] = [];
+    listStore.usersValidated.forEach((user) => {
+        array.push({ validated: true, fullname: `${user.firstname} ${user.lastname}`, permission: user.listPermission, ...user });
+    })
+    listStore.usersAwaitingValidation.forEach((user) => {
+        array.push({ validated: false, fullname: `${user.firstname} ${user.lastname}`, permission: user.listPermission, ...user });
+    })
+    return array;
+});
+
+const getStatusIcon = (item: userItem) => {
+    if (item.validated) {
+        return 'mdi-check-bold';
+    } else {
+        return 'mdi-account-clock';
+    }
+}
+
+const getStatusColor = (item: userItem) => {
+    if (item.validated) {
+        return 'green';
+    } else {
+        return 'red';
+    }
+}
+
+const getPermissionIcons = (item: userItem) => {
+    if (item.permission === ListPermission.OWNER) {
+        return [
+            { text: 'mdi-magnify', tooltip: 'Consulter' },
+            { text: 'mdi-pen', tooltip: 'Modifier' },
+        ]
+    } else if (item.permission === ListPermission.CAN_SEE_AND_MODIFY) {
+        return [
+            { text: 'mdi-magnify', tooltip: 'Consulter' },
+            { text: 'mdi-pen', tooltip: 'Modifier' },
+        ]
+    } else {
+        return [
+            { text: 'mdi-magnify', tooltip: 'Consulter' },
+        ]
     }
 }
 
@@ -257,12 +353,12 @@ interface ListPermissionInSelect {
 
 const listPermissionItems: ListPermissionInSelect[] = [
     { text: 'Peut voir mais pas modifier', value: ListPermission.CAN_SEE_BUT_NOT_MODIFY },
-    { text: 'Peut voir et modifier (mais pas supprimer)', value: ListPermission.CAN_SEE_BUT_NOT_MODIFY }
+    { text: 'Peut voir et modifier (mais pas supprimer)', value: ListPermission.CAN_SEE_AND_MODIFY }
 ];
 
 
-const removeFriend = (friend: User) => {
-    friendToRemove.value = friend;
+const removeFriend = (friend: userItem) => {
+    friendToRemove.value = { email: friend.email, firstname: friend.firstname, lastname: friend.lastname, id: friend.id, keycloakUuid: friend.keycloakUuid, listPermission: friend.permission };
     removeFriendModal.value = true;
 }
 
@@ -272,7 +368,8 @@ const closeRemoveFriendModal = () => {
 
 const friendsToInvite = computed(() => {
     if (selectedList.value) {
-        return userStore.userFriends.filter(friend => !selectedList.value?.users.some(user => user.id === friend.id));
+        const combinedExcludeList = [...listStore.usersAwaitingValidation, ...listStore.usersValidated];
+        return userStore.userFriends.filter(user => !combinedExcludeList.some(excludeUser => excludeUser.id === user.id));
     } else {
         return [];
     }
@@ -315,8 +412,9 @@ const goToSingleList = (listId: string) => {
     router.push({ path: `/single_list/${listId}` });
 };
 
-const openSettings = (list: any) => {
+const openSettings = async (list: any) => {
     selectedList.value = list;
+    await listStore.fetchOne(list.id);
     settingsDialog.value = true;
 };
 

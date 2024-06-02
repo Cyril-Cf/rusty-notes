@@ -15,11 +15,19 @@ export const findAllListForUserWithTags = gql`
             tags {
                 name
             }
-            users {
+            usersValidated {
                 id
                 firstname
                 lastname
                 email
+                listPermission
+            }
+            usersAwaitingValidation {
+                id
+                firstname
+                lastname
+                email
+                listPermission
             }
         }
     }

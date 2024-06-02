@@ -17,6 +17,7 @@ import { NewItem, Item } from '../types/Item'
 import { DeleteStatus, DeleteResult, AddFriendToMyListStatus, AddFriendToMyListResult, RemoveFriendFromMyListResult, RemoveFriendFromMyListStatus, RefuseListInvitationResult, RefuseListInvitationStatus, AcceptListInvitationResult, AcceptListInvitationStatus } from '@/types/utils';
 import { toast } from 'vue3-toastify';
 import { useUserStore } from './userStore'
+import { User } from '@/types/User'
 
 export const useListStore = defineStore('list', () => {
     const userStore = useUserStore();
@@ -26,6 +27,8 @@ export const useListStore = defineStore('list', () => {
     const sharedListToValidate = ref<List[]>([]);
     const selectedList = ref<List | undefined>();
     const selectedItems = ref<Item[]>([])
+    const usersValidated = ref<User[]>([]);
+    const usersAwaitingValidation = ref<User[]>([]);
 
     async function fetchLists(userId: String) {
         const { data } = await apolloClient.query({
@@ -72,6 +75,8 @@ export const useListStore = defineStore('list', () => {
             selectedList.value = data.findOneWithItemsAndTags;
             if (selectedList.value) {
                 selectedItems.value = selectedList.value.items;
+                usersValidated.value = selectedList.value.usersValidated;
+                usersAwaitingValidation.value = selectedList.value.usersAwaitingValidation;
             }
         }
     }
@@ -237,6 +242,8 @@ export const useListStore = defineStore('list', () => {
         sharedListsValidated,
         selectedList,
         selectedItems,
+        usersValidated,
+        usersAwaitingValidation,
         fetchLists,
         createNewList,
         deleteSelectedList,

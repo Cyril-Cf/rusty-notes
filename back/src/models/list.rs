@@ -1,6 +1,6 @@
+use super::item::Item;
 use super::list_tag::ListTag;
 use super::user_list::ListPermission;
-use super::{item::Item, user::User};
 use diesel::prelude::*;
 use juniper::{GraphQLEnum, GraphQLInputObject, GraphQLObject};
 use uuid::Uuid;
@@ -32,9 +32,21 @@ pub struct ListGraphQL {
     pub list_type: ListType,
     pub tags: Vec<ListTag>,
     pub items: Vec<Item>,
-    pub users: Vec<User>,
+    pub users_validated: Vec<UserListGraphQL>,
+    pub users_awaiting_validation: Vec<UserListGraphQL>,
     pub is_owner: bool,
     pub is_validated: bool,
+    pub list_permission: ListPermission,
+}
+
+#[derive(Debug, GraphQLObject)]
+#[graphql(description = "A user")]
+pub struct UserListGraphQL {
+    pub id: Uuid,
+    pub firstname: String,
+    pub lastname: String,
+    pub email: String,
+    pub keycloak_uuid: Uuid,
     pub list_permission: ListPermission,
 }
 

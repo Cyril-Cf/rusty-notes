@@ -8,7 +8,8 @@ export interface List {
     items: Item[];
     tags: Tag[];
     listType: ListType;
-    users: User[];
+    usersValidated: User[];
+    usersAwaitingValidation: User[];
     isOwner: boolean;
     isValidated: boolean;
     listPermission: ListPermission;

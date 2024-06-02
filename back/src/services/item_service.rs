@@ -36,7 +36,7 @@ pub fn create_item(
         .values(&new_item)
         .get_result::<Item>(conn)?;
     if let Some(list) = list_service::find_one(conn, input.list_id)? {
-        let users = list_service::get_users_for_list(conn, list)?;
+        let users = list_service::get_users_for_list(conn, list, true)?;
         for user in users {
             notification_server.do_send(SendFriendshipNotification {
                 user_id: user.id,
@@ -57,7 +57,7 @@ pub fn delete_item(
             let rows_deleted = diesel::delete(items.filter(id.eq(item_id))).execute(conn)? as usize;
             if rows_deleted > 0 {
                 if let Some(list) = list_service::find_one(conn, item.list_id)? {
-                    let users = list_service::get_users_for_list(conn, list)?;
+                    let users = list_service::get_users_for_list(conn, list, true)?;
                     for user in users {
                         notification_server.do_send(SendFriendshipNotification {
                             user_id: user.id,
@@ -107,7 +107,7 @@ pub fn update_item(
             .set(&new_item)
             .execute(conn)?;
         if let Some(list) = list_service::find_one(conn, input.list_id)? {
-            let users = list_service::get_users_for_list(conn, list)?;
+            let users = list_service::get_users_for_list(conn, list, true)?;
             for user in users {
                 notification_server.do_send(SendFriendshipNotification {
                     user_id: user.id,

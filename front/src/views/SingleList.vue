@@ -1,5 +1,6 @@
 <template>
     <v-container>
+        <v-btn color="primary" @click="goBackToLists">Retour à mes listes</v-btn>
         <v-card v-if="listStore.selectedList">
             <v-card-title>{{ listStore.selectedList.name }} - {{ permissionText }}</v-card-title>
             <v-card-text>
@@ -65,6 +66,10 @@ const route = useRoute();
 
 const rules = {
     required: (value: string) => !!value || 'Ce champ est requis'
+};
+
+const goBackToLists = () => {
+    router.push({ path: "/my_lists" });
 };
 
 interface ItemTypeInSelect {
