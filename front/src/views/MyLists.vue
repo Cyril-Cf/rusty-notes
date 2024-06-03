@@ -1,7 +1,10 @@
 <template>
-    <div>
-        <v-container>
-            <v-row>
+    <v-container class="mx-10 my-5">
+        <v-row class="mb-5">
+            <v-btn @click="pushToNewList" color="primary">Ajouter une liste</v-btn>
+        </v-row>
+        <v-row>
+            <v-col cols="12">
                 <v-col cols="12">
                     <h1>Mes listes</h1>
                 </v-col>
@@ -9,37 +12,34 @@
                     <ListItem :list="list" @deleteListEmit="deleteListOpenModale" @goToSingleListEmit="goToSingleList"
                         @openSettingsEmit="openSettings" />
                 </v-col>
-            </v-row>
-            <v-row v-if="listStore.sharedListsValidated.length > 0">
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col cols="12">
                 <v-col cols="12">
                     <h1>Mes listes partagées</h1>
                 </v-col>
                 <v-col cols="12" v-for="(list, index) in listStore.sharedListsValidated" :key="index">
                     <ListItem :list="list" @goToSingleListEmit="goToSingleList" />
                 </v-col>
-            </v-row>
-            <v-row v-if="listStore.sharedListToValidate.length > 0">
-                <v-col cols="12">
-                    <h1>Mes invitations</h1>
-                </v-col>
-                <v-col cols="12" v-for="(list, index) in listStore.sharedListToValidate" :key="index">
-                    <ListItem :list="list" @acceptInvitationEmit="acceptInvitation"
-                        @refuseInvitationEmit="refuseInvitation" />
-                </v-col>
-            </v-row>
-            <v-row>
-                <v-col cols="12">
-                    <v-btn @click="pushToNewList" color="primary">Ajouter une liste</v-btn>
-                </v-col>
-            </v-row>
-        </v-container>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col cols="12">
+                <h1>Mes invitations</h1>
+            </v-col>
+            <v-col cols="12" v-for="(list, index) in listStore.sharedListToValidate" :key="index">
+                <ListItem :list="list" @acceptInvitationEmit="acceptInvitation"
+                    @refuseInvitationEmit="refuseInvitation" />
+            </v-col>
+        </v-row>
         <v-dialog v-model="settingsDialog" max-width="600px">
             <ListSettingModal @closeSettingsEmit="settingsDialog = false" />
         </v-dialog>
-        <v-dialog v-model="removeListDialog" max-width="400px">
+        <v-dialog v-model="removeListDialog" max-width="300px">
             <RemoveListModal @closeRemoveListModalEmit="removeListDialog = false" @RemoveListConfirmEmit="deleteList" />
         </v-dialog>
-    </div>
+    </v-container>
 </template>
 
 <script lang="ts" setup>

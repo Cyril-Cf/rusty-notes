@@ -1,51 +1,50 @@
 <template>
-    <div>
-        <v-card>
-            <v-card-text>
-                <v-data-table :headers="headers" :items="usersItem">
-                    <template v-slot:top>
-                        <v-toolbar flat>
-                            <v-toolbar-title>Utilisateurs</v-toolbar-title>
-                            <v-divider class="mx-4" inset vertical></v-divider>
-                            <v-spacer></v-spacer>
-                            <InviteFriendToListModal @closeSettingModalEmit="emit('closeSettingsEmit')" />
-                            <v-dialog v-model="openRemoveFriendToListModal" max-width="400px">
-                                <RemoveFriendFromListModal @closeRemoveFriendModal="openRemoveFriendToListModal = false"
-                                    @RemoveFriendConfirmEmit="RemoveFriendConfirm" />
-                            </v-dialog>
+    <v-card>
+        <v-card-text>
+            <v-data-table :headers="headers" :items="usersItem" fixed-footer items-per-page-text="Item par page"
+                height="400px" :pageText="'{0}-{1} sur {2}'">
+                <template v-slot:top>
+                    <v-toolbar flat>
+                        <v-toolbar-title>Utilisateurs</v-toolbar-title>
+                        <v-divider class="mx-4" inset vertical></v-divider>
+                        <v-spacer></v-spacer>
+                        <InviteFriendToListModal @closeSettingModalEmit="emit('closeSettingsEmit')" />
+                        <v-dialog v-model="openRemoveFriendToListModal" max-width="400px">
+                            <RemoveFriendFromListModal @closeRemoveFriendModal="openRemoveFriendToListModal = false"
+                                @RemoveFriendConfirmEmit="RemoveFriendConfirm" />
+                        </v-dialog>
 
-                        </v-toolbar>
-                    </template>
-                    <template v-slot:item.action="{ item }">
-                        <v-icon v-if="showDeletebutton(item)" color="black" size="small" @click="removeFriend(item)">
-                            mdi-delete
-                        </v-icon>
-                    </template>
-                    <template v-slot:item.status="{ item }">
-                        <v-icon :color="getStatusColor(item)" size="small">
-                            {{ getStatusIcon(item) }}
-                        </v-icon>
-                    </template>
-                    <template v-slot:item.permission="{ item }">
-                        <v-icon v-for="permission in getPermissionIcons(item)" :key="permission.text" color="grey"
-                            size="small"><v-tooltip>
-                                <template v-slot:activator="{ props }">
-                                    <span v-bind="props"><v-icon color="grey" size="small">
-                                            {{ permission.text }}
-                                        </v-icon></span>
-                                </template>
-                                <span>{{ permission.tooltip }}</span>
-                            </v-tooltip>
-                        </v-icon>
-                    </template>
-                </v-data-table>
-            </v-card-text>
-            <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" @click="emit('closeSettingsEmit')">Fermer</v-btn>
-            </v-card-actions>
-        </v-card>
-    </div>
+                    </v-toolbar>
+                </template>
+                <template v-slot:item.action="{ item }">
+                    <v-icon v-if="showDeletebutton(item)" color="black" size="small" @click="removeFriend(item)">
+                        mdi-delete
+                    </v-icon>
+                </template>
+                <template v-slot:item.status="{ item }">
+                    <v-icon :color="getStatusColor(item)" size="small">
+                        {{ getStatusIcon(item) }}
+                    </v-icon>
+                </template>
+                <template v-slot:item.permission="{ item }">
+                    <v-icon v-for="permission in getPermissionIcons(item)" :key="permission.text" color="grey"
+                        size="small"><v-tooltip>
+                            <template v-slot:activator="{ props }">
+                                <span v-bind="props"><v-icon color="grey" size="small">
+                                        {{ permission.text }}
+                                    </v-icon></span>
+                            </template>
+                            <span>{{ permission.tooltip }}</span>
+                        </v-tooltip>
+                    </v-icon>
+                </template>
+            </v-data-table>
+        </v-card-text>
+        <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="blue darken-1" @click="emit('closeSettingsEmit')">Fermer</v-btn>
+        </v-card-actions>
+    </v-card>
 </template>
 
 <script lang="ts" setup>

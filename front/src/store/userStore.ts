@@ -15,6 +15,7 @@ export const useUserStore = defineStore('user', () => {
   const currentUser = ref<User | undefined>();
   const userFriends = ref<User[]>([]);
   const friendships = ref<Friendship[]>([]);
+  const friendshipsAwaitingValidation = ref<Friendship[]>([]);
 
   async function DoesUserExistInDB(keycloakId: String): Promise<boolean> {
     const { data } = await apolloClient.query({
@@ -49,14 +50,29 @@ export const useUserStore = defineStore('user', () => {
     if (data && data.getUserFriendships) {
       friendships.value = data.getUserFriendships;
       let friends: User[] = [];
+      let friendsAwaitingValidation: Friendship[] = [];
       friendships.value.forEach((friendship) => {
-        if (friendship.friendWhoAsked.id === userId) {
-          friends.push(friendship.friendWhoGotAsked);
+        if (!friendship.isValidated) {
+          friendsAwaitingValidation.push(friendship);
+
         } else {
-          friends.push(friendship.friendWhoAsked)
+          if (friendship.friendWhoAsked.id === userId) {
+            let friend = friendship.friendWhoGotAsked;
+            friend.friendSince = friendship.updatedAt;
+            if (friendship.isValidated) {
+              friends.push(friend);
+            }
+          } else {
+            let friend = friendship.friendWhoAsked;
+            friend.friendSince = friendship.updatedAt;
+            if (friendship.isValidated) {
+              friends.push(friend);
+            }
+          }
         }
       });
       userFriends.value = friends;
+      friendshipsAwaitingValidation.value = friendsAwaitingValidation
     }
   }
 
@@ -133,6 +149,7 @@ export const useUserStore = defineStore('user', () => {
 
   return {
     userFriends,
+    friendshipsAwaitingValidation,
     currentUser,
     friendships,
     DoesUserExistInDB,

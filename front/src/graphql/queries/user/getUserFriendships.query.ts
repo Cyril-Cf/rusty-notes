@@ -5,6 +5,7 @@ export const getUserFriendships = gql`
         getUserFriendships(userId: $userId) {
             id
             isValidated
+            updatedAt
             friendWhoAsked {
                 id
                 firstname

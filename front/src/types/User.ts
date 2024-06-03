@@ -7,6 +7,7 @@ export interface User {
     email: String;
     keycloakUuid: String;
     listPermission: ListPermission;
+    friendSince?: Date;
 }
 
 export interface NewUser {

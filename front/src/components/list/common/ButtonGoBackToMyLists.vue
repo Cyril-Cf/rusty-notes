@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="mb-5">
         <v-btn color="primary" @click="goBackToLists">Retour à mes listes</v-btn>
     </div>
 </template>

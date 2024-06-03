@@ -5,6 +5,7 @@ export interface Friendship {
     friendWhoAsked: User;
     friendWhoGotAsked: User;
     isValidated: boolean;
+    updatedAt: Date;
 }
 
 export interface AddFriendResult {

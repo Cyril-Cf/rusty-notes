@@ -1,14 +1,16 @@
 <template>
-    <v-container>
+    <v-container class="mx-10 my-5">
+        <v-row class="mb-5">
+            <v-btn color="primary" @click="showAddFriendModal = true">Ajouter un ami</v-btn>
+        </v-row>
         <v-row>
-            <v-col cols="12" md="6">
-                <h3>Demandes d'amis</h3>
-                <FriendDemandList />
-            </v-col>
-            <v-col cols="12" md="6">
-                <h3>Amis</h3>
+            <v-col cols="12">
                 <MyFriendsList />
-                <v-btn color="primary" @click="showAddFriendModal = true">Ajouter un ami</v-btn>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col cols="12">
+                <FriendDemandList />
             </v-col>
         </v-row>
         <v-dialog v-model="showAddFriendModal" max-width="500px">

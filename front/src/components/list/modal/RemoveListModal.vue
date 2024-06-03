@@ -1,8 +1,10 @@
 <template>
     <div>
-        <v-card>
-            <v-card-title class="text-h5">Supprimer cette liste ?</v-card-title>
-            <v-card-actions>
+        <v-card class="pt-2">
+            <v-card-title class="d-flex pa-0 justify-center">
+                <div>Supprimer cette liste ?</div>
+            </v-card-title>
+            <v-card-actions class="pa-0">
                 <v-spacer></v-spacer>
                 <v-btn color="blue-darken-1" variant="text" @click="closeRemoveListModal">Annuler</v-btn>
                 <v-btn color="blue-darken-1" variant="text" @click="RemoveListConfirm">OK</v-btn>

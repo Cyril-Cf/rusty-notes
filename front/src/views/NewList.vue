@@ -1,8 +1,14 @@
 <template>
-    <v-container>
-        <ButtonGoBackToMyLists />
-        <h1>Créer une nouvelle liste</h1>
-        <NewList />
+    <v-container class="mx-10 my-5">
+        <v-row class="mb-5">
+            <ButtonGoBackToMyLists />
+        </v-row>
+        <v-row>
+            <v-col cols="12">
+                <h1 class="pb-5">Créer une nouvelle liste</h1>
+                <NewList />
+            </v-col>
+        </v-row>
     </v-container>
 </template>
 

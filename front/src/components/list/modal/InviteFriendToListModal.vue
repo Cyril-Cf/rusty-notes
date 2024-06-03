@@ -6,20 +6,24 @@
                     Inviter un ami
                 </v-btn>
             </template>
-            <v-card>
-                <v-card-title>
-                    <span class="text-h5">Inviter un ami à cette liste</span>
+            <v-card class="px-4 py-4">
+                <v-card-title class="d-flex pa-0 pl-4 flex-start">
+                    <div>Inviter un ami à cette liste</div>
                 </v-card-title>
-
-                <v-card-text>
+                <v-card-subtitle class="text-wrap my-2">
+                    Choisissez parmi vos amis avec qui vous souhaitez partager cette liste, puis les permissions que
+                    cette personne
+                    aura (simplement regarder ou bien même la modifier).
+                </v-card-subtitle>
+                <v-card-text class="pb-0">
                     <v-container>
                         <v-row>
-                            <v-col cols="12" md="12" sm="12">
+                            <v-col cols="12">
                                 <v-select :items="friendsToInvite" :item-title="getFriendFullName" item-value="id"
                                     no-data-text="Personne à ajouter" v-model="selectedFriend" :rules="[rules.required]"
                                     required label="Sélectionner un ami"></v-select>
                             </v-col>
-                            <v-col cols="12" md="12" sm="12">
+                            <v-col cols="12" class="pb-0">
                                 <v-select :items="listPermissionItems" v-model="selectedPermission" label="Permissions"
                                     item-title="text" item-value="value" :rules="[rules.required]" return-object
                                     single-line required></v-select>
@@ -27,9 +31,7 @@
                         </v-row>
                     </v-container>
                 </v-card-text>
-
-                <v-card-actions>
-                    <v-spacer></v-spacer>
+                <v-card-actions class="pa-0 d-flex justify-center">
                     <v-btn color="blue-darken-1" variant="text" @click="openInviteFriendToListModal = false">
                         Annuler
                     </v-btn>
@@ -86,7 +88,6 @@ const listPermissionItems: ListPermissionInSelect[] = [
 const getFriendFullName = (friend: User) => {
     return `${friend.firstname} ${friend.lastname}(${friend.email})`
 }
-
 
 const friendsToInvite = computed(() => {
     const combinedExcludeList = [...listStore.usersAwaitingValidation, ...listStore.usersValidated];
