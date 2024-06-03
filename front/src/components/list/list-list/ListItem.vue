@@ -28,7 +28,8 @@
                     }}</v-chip>
             </v-card-text>
             <v-card-actions>
-                <v-btn @click="goToSingleList(list.id)" color="primary">Détails</v-btn>
+                <v-btn v-if="list.isValidated || list.isOwner" @click="goToSingleList(list.id)"
+                    color="primary">Détails</v-btn>
                 <v-btn v-if="list.isOwner" @click="deleteList(list.id)" color="error">Supprimer</v-btn>
                 <v-icon v-if="list.isOwner" @click="openSettings(list)" class="ml-auto">mdi-cog</v-icon>
                 <v-btn v-if="!list.isValidated" @click="acceptInvitation(list.id)" color="primary">Accepter de

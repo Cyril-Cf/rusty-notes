@@ -130,9 +130,6 @@ export const useListStore = defineStore('list', () => {
             fetchPolicy: 'no-cache'
         });
         if (data && data.createItem) {
-            toast.success("Item ajouté !", {
-                position: toast.POSITION.BOTTOM_CENTER,
-            });
             await fetchOne(listId);
         }
     }
@@ -144,9 +141,6 @@ export const useListStore = defineStore('list', () => {
             fetchPolicy: 'no-cache'
         });
         if (data && data.updateItem) {
-            toast.success("Item mis à jour !", {
-                position: toast.POSITION.BOTTOM_CENTER,
-            });
             await fetchOne(listId);
         }
     }

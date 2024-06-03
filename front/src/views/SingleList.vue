@@ -1,6 +1,6 @@
 <template>
     <v-container>
-        <v-btn color="primary" @click="goBackToLists">Retour à mes listes</v-btn>
+        <ButtonGoBackToMyLists />
         <v-card v-if="listStore.selectedList">
             <v-card-title>{{ listStore.selectedList.name }} - {{ permissionText }}</v-card-title>
             <v-card-text>
@@ -56,6 +56,7 @@ import router from "@/router";
 import { useRoute } from 'vue-router';
 import { NewItem, ItemType, Item } from '@/types/Item';
 import { ListPermission } from "@/types/List";
+import ButtonGoBackToMyLists from "@/components/list/common/ButtonGoBackToMyLists.vue";
 
 const userStore = useUserStore();
 const listStore = useListStore();
