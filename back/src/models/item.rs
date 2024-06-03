@@ -1,4 +1,5 @@
 use crate::schema::items;
+use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use juniper::{GraphQLEnum, GraphQLInputObject, GraphQLObject};
 use uuid::Uuid;
@@ -12,6 +13,8 @@ pub struct Item {
     pub is_checked: bool,
     pub list_id: Uuid,
     pub item_type: ItemType,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(diesel_derive_enum::DbEnum, Debug, GraphQLEnum, PartialEq)]

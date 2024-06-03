@@ -12,6 +12,7 @@ export const findOneWithItemsAndTags = gql`
             items {
                 id
                 name
+                createdAt
                 isChecked
                 itemType
                 listId

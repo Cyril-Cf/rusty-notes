@@ -75,6 +75,7 @@ export const useListStore = defineStore('list', () => {
             selectedList.value = data.findOneWithItemsAndTags;
             if (selectedList.value) {
                 selectedItems.value = selectedList.value.items;
+                selectedItems.value.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
                 usersValidated.value = selectedList.value.usersValidated;
                 usersAwaitingValidation.value = selectedList.value.usersAwaitingValidation;
             }

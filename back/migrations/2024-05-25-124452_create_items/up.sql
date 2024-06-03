@@ -5,5 +5,8 @@ CREATE TABLE items (
     is_checked BOOLEAN NOT NULL,
     list_id UUID NOT NULL,
     item_type item_type NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_item_list FOREIGN KEY (list_id) REFERENCES lists(id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
+SELECT diesel_manage_updated_at('items');

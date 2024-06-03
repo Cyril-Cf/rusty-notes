@@ -1,6 +1,7 @@
 use crate::models::list::List;
 use crate::models::user::User;
 use crate::schema::user_lists;
+use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use juniper::GraphQLEnum;
 use uuid::Uuid;
@@ -16,6 +17,8 @@ pub struct UserList {
     pub is_owner: bool,
     pub is_validated: bool,
     pub list_permission: ListPermission,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(diesel_derive_enum::DbEnum, Debug, GraphQLEnum, Clone, PartialEq)]

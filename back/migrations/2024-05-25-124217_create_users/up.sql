@@ -3,5 +3,8 @@ CREATE TABLE users (
     firstname VARCHAR NOT NULL,
     lastname VARCHAR NOT NULL,
     email VARCHAR NOT NULL,
-    keycloak_uuid UUID NOT NULL
+    keycloak_uuid UUID NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+SELECT diesel_manage_updated_at('users');

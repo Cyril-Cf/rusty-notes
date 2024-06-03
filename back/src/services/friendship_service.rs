@@ -132,6 +132,8 @@ pub fn get_user_friendships(
             is_validated: friendship.is_validated,
             friend_who_asked: find_user(conn, friendship.user_who_asked_id)?.unwrap(),
             friend_who_got_asked: find_user(conn, friendship.user_who_got_asked_id)?.unwrap(),
+            created_at: friendship.created_at,
+            updated_at: friendship.updated_at,
         })
     }
     Ok(res)

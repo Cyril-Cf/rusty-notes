@@ -3,7 +3,7 @@ use actix_web::{web, HttpRequest, Responder};
 use actix_web_actors::ws;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fmt::{self, write};
+use std::fmt::{self};
 use std::time::{Duration, Instant};
 use uuid::Uuid;
 

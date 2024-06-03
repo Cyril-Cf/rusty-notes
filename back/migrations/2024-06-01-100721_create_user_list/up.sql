@@ -9,5 +9,8 @@ CREATE TABLE user_lists (
     PRIMARY KEY (user_id, list_id),
     is_owner BOOLEAN NOT NULL,
     is_validated BOOLEAN NOT NULL,
-    list_permission list_permission NOT NULL
+    list_permission list_permission NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+SELECT diesel_manage_updated_at('user_lists');

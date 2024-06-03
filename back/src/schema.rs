@@ -24,6 +24,8 @@ diesel::table! {
         user_who_asked_id -> Uuid,
         user_who_got_asked_id -> Uuid,
         is_validated -> Bool,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -37,6 +39,8 @@ diesel::table! {
         is_checked -> Bool,
         list_id -> Uuid,
         item_type -> ItemType,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -45,6 +49,8 @@ diesel::table! {
         id -> Uuid,
         name -> Varchar,
         list_id -> Uuid,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -56,6 +62,8 @@ diesel::table! {
         id -> Uuid,
         name -> Varchar,
         list_type -> ListType,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -68,6 +76,8 @@ diesel::table! {
         has_been_read -> Bool,
         notif_type -> NotifType,
         user_id -> Uuid,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -81,6 +91,8 @@ diesel::table! {
         is_owner -> Bool,
         is_validated -> Bool,
         list_permission -> ListPermission,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -91,6 +103,8 @@ diesel::table! {
         lastname -> Varchar,
         email -> Varchar,
         keycloak_uuid -> Uuid,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 

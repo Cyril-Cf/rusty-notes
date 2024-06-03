@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use juniper::{GraphQLEnum, GraphQLObject};
 use uuid::Uuid;
@@ -15,6 +16,8 @@ pub struct Friendship {
     pub user_who_asked_id: Uuid,
     pub user_who_got_asked_id: Uuid,
     pub is_validated: bool,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Insertable)]
@@ -33,6 +36,8 @@ pub struct FriendshipGraphQL {
     pub is_validated: bool,
     pub friend_who_asked: User,
     pub friend_who_got_asked: User,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug, GraphQLEnum)]

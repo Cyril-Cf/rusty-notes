@@ -9,9 +9,6 @@ export const findAllListForUserWithTags = gql`
             isOwner
             isValidated
             listPermission
-            items {
-                name
-            }
             tags {
                 name
             }

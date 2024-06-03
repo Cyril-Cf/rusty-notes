@@ -1,6 +1,7 @@
 use super::item::Item;
 use super::list_tag::ListTag;
 use super::user_list::ListPermission;
+use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use juniper::{GraphQLEnum, GraphQLInputObject, GraphQLObject};
 use uuid::Uuid;
@@ -13,6 +14,8 @@ pub struct List {
     pub id: Uuid,
     pub name: String,
     pub list_type: ListType,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(diesel_derive_enum::DbEnum, Debug, GraphQLEnum, Clone)]
@@ -37,6 +40,8 @@ pub struct ListGraphQL {
     pub is_owner: bool,
     pub is_validated: bool,
     pub list_permission: ListPermission,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug, GraphQLObject)]
@@ -48,6 +53,8 @@ pub struct UserListGraphQL {
     pub email: String,
     pub keycloak_uuid: Uuid,
     pub list_permission: ListPermission,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(AsChangeset)]

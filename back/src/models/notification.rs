@@ -1,4 +1,5 @@
 use crate::schema::notifications;
+use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use juniper::{GraphQLEnum, GraphQLInputObject, GraphQLObject};
 use uuid::Uuid;
@@ -12,6 +13,8 @@ pub struct Notification {
     pub has_been_read: bool,
     pub notif_type: NotifType,
     pub user_id: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(diesel_derive_enum::DbEnum, Debug, GraphQLEnum, Clone)]

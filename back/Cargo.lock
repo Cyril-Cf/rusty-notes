@@ -590,6 +590,7 @@ dependencies = [
  "actix-web-actors",
  "actix-web-middleware-keycloak-auth",
  "async-std",
+ "chrono",
  "diesel",
  "diesel-derive-enum",
  "dotenv",
@@ -866,6 +867,7 @@ checksum = "ff236accb9a5069572099f0b350a92e9560e8e63a9b8d546162f4a5e03026bb2"
 dependencies = [
  "bitflags 2.5.0",
  "byteorder",
+ "chrono",
  "diesel_derives",
  "itoa",
  "pq-sys",
@@ -1399,6 +1401,7 @@ checksum = "943306315b1a7a03d27af9dfb0c288d9f4da8830c17df4bceb7d50a47da0982c"
 dependencies = [
  "async-trait",
  "auto_enums",
+ "chrono",
  "fnv",
  "futures",
  "indexmap",

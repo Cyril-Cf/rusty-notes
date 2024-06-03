@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use juniper::{GraphQLInputObject, GraphQLObject};
 use uuid::Uuid;
@@ -12,6 +13,8 @@ pub struct ListTag {
     pub id: Uuid,
     pub name: String,
     pub list_id: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(AsChangeset)]
