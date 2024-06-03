@@ -41,7 +41,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, defineEmits, PropType, ref } from 'vue'
+import { defineProps, defineEmits, PropType } from 'vue'
 import { List } from '@/types/List';
 
 const emit = defineEmits(['goToSingleListEmit', 'deleteListEmit', 'openSettingsEmit', 'acceptInvitationEmit', 'refuseInvitationEmit'])
