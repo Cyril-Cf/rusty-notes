@@ -6,7 +6,7 @@
         <v-row>
             <v-col cols="12">
                 <v-col cols="12">
-                    <h1>Mes listes</h1>
+                    <div class="text-h4">Mes listes</div>
                 </v-col>
                 <v-col cols="12" v-for="(list, index) in listStore.ownedLists" :key="index">
                     <ListItem :list="list" @deleteListEmit="deleteListOpenModale" @goToSingleListEmit="goToSingleList"
@@ -14,23 +14,27 @@
                 </v-col>
             </v-col>
         </v-row>
-        <v-row>
+        <v-divider class="my-4" v-if="listStore.sharedListsValidated.length > 0"></v-divider>
+        <v-row v-if="listStore.sharedListsValidated.length > 0">
             <v-col cols="12">
                 <v-col cols="12">
-                    <h1>Mes listes partagées</h1>
+                    <div class="text-h4">Mes listes partagées</div>
                 </v-col>
                 <v-col cols="12" v-for="(list, index) in listStore.sharedListsValidated" :key="index">
                     <ListItem :list="list" @goToSingleListEmit="goToSingleList" />
                 </v-col>
             </v-col>
         </v-row>
-        <v-row>
+        <v-divider class="my-4" v-if="listStore.sharedListToValidate.length > 0"></v-divider>
+        <v-row v-if="listStore.sharedListToValidate.length > 0">
             <v-col cols="12">
-                <h1>Mes invitations</h1>
-            </v-col>
-            <v-col cols="12" v-for="(list, index) in listStore.sharedListToValidate" :key="index">
-                <ListItem :list="list" @acceptInvitationEmit="acceptInvitation"
-                    @refuseInvitationEmit="refuseInvitation" />
+                <v-col cols="12">
+                    <div class="text-h4">Mes invitations</div>
+                </v-col>
+                <v-col cols="12" v-for="(list, index) in listStore.sharedListToValidate" :key="index">
+                    <ListItem :list="list" @acceptInvitationEmit="acceptInvitation"
+                        @refuseInvitationEmit="refuseInvitation" />
+                </v-col>
             </v-col>
         </v-row>
         <v-dialog v-model="settingsDialog" max-width="600px">
