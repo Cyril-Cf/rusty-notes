@@ -1,6 +1,6 @@
 <template>
-    <v-container class="mx-10 my-5">
-        <v-row class="mb-5">
+    <v-container class="my-5 mx-auto" fluid style="width: 80vw;">
+        <v-row no-gutters class="mb-5">
             <ButtonGoBackToMyLists />
         </v-row>
         <v-row>

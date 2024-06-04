@@ -44,12 +44,12 @@ const routes = [
     ],
   },
   {
-    path: '/my_lists',
+    path: '/my_notes',
     component: () => import('@/layouts/default/Default.vue'),
     children: [
       {
         path: '',
-        name: 'my_lists',
+        name: 'my_notes',
         component: () => import('@/views/MyLists.vue'),
         meta: {
           isAuthenticated: true,

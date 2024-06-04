@@ -1,10 +1,12 @@
 <template>
-    <v-data-table :headers="headers" :items="userStore.friendshipsAwaitingValidation" fixed-footer width="auto"
+    <v-data-table v-if="userStore.friendshipsAwaitingValidation.length > 0" :headers="headers"
+        :items="userStore.friendshipsAwaitingValidation" fixed-footer width="auto"
         no-data-text="Pas de demande en cours" :pageText="'{0}-{1} sur {2}'" items-per-page-text="Item par page"
         height="200px">
         <template v-slot:top>
             <v-toolbar flat>
-                <v-toolbar-title>Mes demandes d'amitiée</v-toolbar-title>
+                <v-toolbar-title>Mes demandes d'amitiée <v-icon
+                        color="red-accent-4">mdi-heart-half-full</v-icon></v-toolbar-title>
                 <v-divider class="mx-4" inset vertical></v-divider>
                 <v-spacer></v-spacer>
             </v-toolbar>

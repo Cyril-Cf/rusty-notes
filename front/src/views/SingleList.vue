@@ -1,6 +1,6 @@
 <template>
-    <v-container class="mx-10 my-5">
-        <v-row class="mb-5">
+    <v-container class="my-5 mx-auto" style="width: 80vw;" fluid>
+        <v-row no-gutters class="mb-5">
             <ButtonGoBackToMyLists />
         </v-row>
         <v-row>
@@ -112,7 +112,7 @@ const deleteList = async () => {
     const listId = listStore.selectedList?.id;
     if (userId && listId) {
         await listStore.deleteSelectedList(listId, userId);
-        router.push({ path: "/my_lists" });
+        router.push({ path: "/my_notes" });
     }
 }
 
@@ -143,7 +143,7 @@ onMounted(async () => {
                 const listId = route.params.listId as String;
                 await listStore.fetchOne(listId);
             } else {
-                router.push({ path: "/subscription_more_infos/my_lists" });
+                router.push({ path: "/subscription_more_infos/my_notes" });
             }
         }
     });

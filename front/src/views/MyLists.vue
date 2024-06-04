@@ -1,40 +1,34 @@
 <template>
-    <v-container class="mx-10 my-5">
-        <v-row class="mb-5">
+    <v-container class="mx-10 my-5 mx-auto" fluid style="width: 80vw;">
+        <v-row no-gutters>
             <v-btn @click="pushToNewList" color="primary">Ajouter une liste</v-btn>
         </v-row>
-        <v-row>
+        <v-row no-gutters>
             <v-col cols="12">
-                <v-col cols="12">
-                    <div class="text-h4">Mes listes</div>
-                </v-col>
-                <v-col cols="12" v-for="(list, index) in listStore.ownedLists" :key="index">
-                    <ListItem :list="list" @deleteListEmit="deleteListOpenModale" @goToSingleListEmit="goToSingleList"
-                        @openSettingsEmit="openSettings" />
-                </v-col>
+                <div class="text-h4 my-10">Mes notes</div>
+            </v-col>
+            <v-col cols="12" v-for="(list, index) in listStore.ownedLists" :key="index">
+                <ListItem :list="list" @deleteListEmit="deleteListOpenModale" @goToSingleListEmit="goToSingleList"
+                    @openSettingsEmit="openSettings" />
             </v-col>
         </v-row>
         <v-divider class="my-4" v-if="listStore.sharedListsValidated.length > 0"></v-divider>
         <v-row v-if="listStore.sharedListsValidated.length > 0">
             <v-col cols="12">
-                <v-col cols="12">
-                    <div class="text-h4">Mes listes partagées</div>
-                </v-col>
-                <v-col cols="12" v-for="(list, index) in listStore.sharedListsValidated" :key="index">
-                    <ListItem :list="list" @goToSingleListEmit="goToSingleList" />
-                </v-col>
+                <div class="text-h4 my-10">Mes notes partagées</div>
+            </v-col>
+            <v-col cols="12" v-for="(list, index) in listStore.sharedListsValidated" :key="index">
+                <ListItem :list="list" @goToSingleListEmit="goToSingleList" />
             </v-col>
         </v-row>
         <v-divider class="my-4" v-if="listStore.sharedListToValidate.length > 0"></v-divider>
         <v-row v-if="listStore.sharedListToValidate.length > 0">
             <v-col cols="12">
-                <v-col cols="12">
-                    <div class="text-h4">Mes invitations</div>
-                </v-col>
-                <v-col cols="12" v-for="(list, index) in listStore.sharedListToValidate" :key="index">
-                    <ListItem :list="list" @acceptInvitationEmit="acceptInvitation"
-                        @refuseInvitationEmit="refuseInvitation" />
-                </v-col>
+                <div class="text-h4 my-10">Mes invitations</div>
+            </v-col>
+            <v-col cols="12" v-for="(list, index) in listStore.sharedListToValidate" :key="index">
+                <ListItem :list="list" @acceptInvitationEmit="acceptInvitation"
+                    @refuseInvitationEmit="refuseInvitation" />
             </v-col>
         </v-row>
         <v-dialog v-model="settingsDialog" max-width="600px">
@@ -112,7 +106,7 @@ onMounted(async () => {
                     await userStore.getFriendships(userId);
                 }
             } else {
-                router.push({ path: "/subscription_more_infos/my_lists" });
+                router.push({ path: "/subscription_more_infos/my_notes" });
             }
         }
     });

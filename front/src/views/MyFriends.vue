@@ -1,14 +1,14 @@
 <template>
-    <v-container class="mx-10 my-5">
-        <v-row class="mb-5">
+    <v-container class="mx-10 my-5 mx-auto" fluid style="width: 80vw;">
+        <v-row no-gutters class="mb-5">
             <v-btn color="primary" @click="showAddFriendModal = true">Ajouter un ami</v-btn>
         </v-row>
-        <v-row>
+        <v-row no-gutters>
             <v-col cols="12">
                 <MyFriendsList />
             </v-col>
         </v-row>
-        <v-row>
+        <v-row no-gutters class="mt-10">
             <v-col cols="12">
                 <FriendDemandList />
             </v-col>

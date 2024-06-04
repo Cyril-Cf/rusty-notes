@@ -54,7 +54,7 @@ const submit = async () => {
                 userId: userId.toString()
             };
             await listStore.createNewList(input);
-            router.push({ path: '/my_lists' });
+            router.push({ path: '/my_notes' });
         }
 
     }

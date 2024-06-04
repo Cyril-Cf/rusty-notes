@@ -3,7 +3,7 @@
         items-per-page-text="Item par page" :pageText="'{0}-{1} sur {2}'" no-data-text="Pas encore d'amitiée">
         <template v-slot:top>
             <v-toolbar flat>
-                <v-toolbar-title>Mes amis</v-toolbar-title>
+                <v-toolbar-title>Mes amis <v-icon color="red-accent-4">mdi-heart-circle</v-icon></v-toolbar-title>
                 <v-divider class="mx-4" inset vertical></v-divider>
                 <v-spacer></v-spacer>
             </v-toolbar>
@@ -11,7 +11,6 @@
         <template v-slot:item.friendSince="{ item }">
             {{ formatFriendshipDate(item) }}
         </template>
-        <!-- <template slot="no-data"></template> -->
         <template v-slot:item.action="{ item }">
             <v-icon color="error" size="small" @click="openDeleteModal(item)">
                 mdi-delete
