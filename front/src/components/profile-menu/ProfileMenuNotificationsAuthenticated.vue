@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-menu min-width="400px" max-width="400px" rounded>
+        <v-menu :width="mdAndUp ? 400 : '80vw'" rounded>
             <template v-slot:activator="{ props }">
                 <v-btn icon v-bind="props">
                     <v-badge :content="unreadNotificationsCount" color="red">
@@ -13,8 +13,9 @@
                     <div class="text-center">
                         <h3 class="py-3">Notifications</h3>
                         <v-divider></v-divider>
-                        <v-list dense max-height="200px" min-width="350px" class="overflow-y-auto">
-                            <v-list-item v-for="notification in sortedNotifications" :key="notification.id">
+                        <v-list dense max-height="200px" :width="mdAndUp ? 350 : '75vw'" class="overflow-y-auto">
+                            <v-list-item v-for="notification in sortedNotifications" :key="notification.id"
+                                @click="goToPage(notification)">
                                 <template v-slot:prepend>
                                     <v-avatar size="small" :color="getIconColor(notification)">
                                         <v-icon color="white">{{ getIconImage(notification) }}</v-icon>
@@ -27,11 +28,11 @@
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ props }">
                                             <v-btn icon elevation="0" size="x-small" color="primary"
-                                                @click="markAsRead(notification)" v-bind="props">
+                                                @click.stop="markAsRead(notification)" v-bind="props">
                                                 <v-icon>mdi-check</v-icon>
                                             </v-btn>
                                         </template>
-                                        <span>Mark as Read</span>
+                                        <span>Marquer comme lue</span>
                                     </v-tooltip>
                                 </template>
                             </v-list-item>
@@ -44,11 +45,14 @@
 </template>
 
 <script lang="ts" setup>
+import { useDisplay } from 'vuetify'
+const { mdAndUp } = useDisplay()
 import { computed, onMounted } from "vue";
 import { useNotificationStore } from "@/store/notificationStore";
 import { useUserStore } from "@/store/userStore";
 import { Notification, NotifType } from "@/types/Notification";
 import authPromise from "@/plugins/keycloak";
+import router from "@/router";
 
 const notificationStore = useNotificationStore();
 const userStore = useUserStore();
@@ -62,6 +66,24 @@ const sortedNotifications = computed(() => {
 const unreadNotificationsCount = computed(() => {
     return notifications.value.filter((notif) => !notif.hasBeenRead).length;
 });
+
+const goToPage = (notification: Notification) => {
+    let url = "/"
+    switch (notification.notifType) {
+        case NotifType.NEW_FRIENDSHIP_DEMAND:
+            url = "/my_friends";
+            break;
+        case NotifType.NEW_FRIENDSHIP_ACCEPTED:
+            url = "/my_friends";
+            break;
+        case NotifType.SHARED_LIST_MODIFIED:
+            url = "/my_notes";
+            break;
+        default:
+            url = "/"
+    }
+    router.push({ path: url })
+}
 
 const getNotificationMessage = (notification: Notification) => {
     switch (notification.notifType) {

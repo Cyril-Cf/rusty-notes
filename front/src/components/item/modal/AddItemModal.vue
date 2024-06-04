@@ -13,8 +13,8 @@
                 item-value="value" label="Type d'élément"></v-select>
         </v-card-text>
         <v-card-actions class="pa-0 d-flex justify-center">
-            <v-btn color="primary" @click="addItem">Ajouter</v-btn>
             <v-btn color="error" @click="emit('closeItemModalEmit')">Annuler</v-btn>
+            <v-btn color="primary" @click="addItem">Ajouter</v-btn>
         </v-card-actions>
     </v-card>
 </template>

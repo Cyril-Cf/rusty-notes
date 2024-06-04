@@ -9,26 +9,40 @@
                         <v-divider class="mx-4" inset vertical></v-divider>
                         <v-spacer></v-spacer>
                         <InviteFriendToListModal @closeSettingModalEmit="emit('closeSettingsEmit')" />
-                        <v-dialog v-model="openRemoveFriendToListModal" max-width="400px">
-                            <RemoveFriendFromListModal @closeRemoveFriendModal="openRemoveFriendToListModal = false"
-                                @RemoveFriendConfirmEmit="RemoveFriendConfirm" />
-                        </v-dialog>
-
                     </v-toolbar>
+                </template>
+                <template v-slot:item.presentation="{ item }">
+                    {{ item.fullname }} ({{ item.email }})
                 </template>
                 <template v-slot:item.action="{ item }">
                     <v-icon v-if="showDeletebutton(item)" color="black" size="small" @click="removeFriend(item)">
                         mdi-delete
                     </v-icon>
+                    <v-dialog v-model="openRemoveFriendToListModal" max-width="400px">
+                        <RemoveFriendFromListModal
+                            @closeRemoveFriendFromListModalEmit="openRemoveFriendToListModal = false"
+                            @RemoveFriendConfirmEmit="RemoveFriendConfirm" />
+                    </v-dialog>
                 </template>
                 <template v-slot:item.status="{ item }">
-                    <v-icon :color="getStatusColor(item)" size="small">
-                        {{ getStatusIcon(item) }}
-                    </v-icon>
+                    <div class="">
+                        <v-icon :color="getStatusColor(item)" size="small">
+                            <v-tooltip>
+                                <template v-slot:activator="{ props }">
+                                    <span v-bind="props">
+                                        <v-icon :color="getStatusColor(item)" size="small">
+                                            {{ getStatusIcon(item) }}
+                                        </v-icon>
+                                    </span>
+                                </template>
+                                <span>{{ getTooltipIcon(item) }}</span>
+                            </v-tooltip>
+                        </v-icon>
+                    </div>
                 </template>
                 <template v-slot:item.permission="{ item }">
-                    <v-icon v-for="permission in getPermissionIcons(item)" :key="permission.text" color="grey"
-                        size="small"><v-tooltip>
+                    <v-icon class="mx-1" v-for="permission in getPermissionIcons(item)" :key="permission.text"
+                        color="grey" size="small"><v-tooltip>
                             <template v-slot:activator="{ props }">
                                 <span v-bind="props"><v-icon color="grey" size="small">
                                         {{ permission.text }}
@@ -42,7 +56,7 @@
         </v-card-text>
         <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" @click="emit('closeSettingsEmit')">Fermer</v-btn>
+            <v-btn color="error" @click="emit('closeSettingsEmit')">Fermer</v-btn>
         </v-card-actions>
     </v-card>
 </template>
@@ -65,8 +79,7 @@ const openRemoveFriendToListModal = ref(false);
 const friendToRemove = ref<User | null>(null);
 
 const headers = [
-    { title: 'Nom', key: 'fullname', sortable: false },
-    { title: 'Email', key: 'email', sortable: false },
+    { title: 'Utilisateur', key: 'presentation', sortable: false },
     { title: 'Droit', key: 'permission', sortable: false },
     { title: 'Statut', key: 'status', sortable: false },
     { title: 'Action', key: 'action', sortable: false },
@@ -116,6 +129,14 @@ const getStatusIcon = (item: userItem) => {
         return 'mdi-check-bold';
     } else {
         return 'mdi-account-clock';
+    }
+}
+
+const getTooltipIcon = (item: userItem) => {
+    if (item.validated) {
+        return 'Validé';
+    } else {
+        return 'En attente';
     }
 }
 

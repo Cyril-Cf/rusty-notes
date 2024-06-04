@@ -32,10 +32,10 @@
                     </v-container>
                 </v-card-text>
                 <v-card-actions class="pa-0 d-flex justify-center">
-                    <v-btn color="blue-darken-1" variant="text" @click="openInviteFriendToListModal = false">
+                    <v-btn color="error" variant="text" @click="openInviteFriendToListModal = false">
                         Annuler
                     </v-btn>
-                    <v-btn color="blue-darken-1" variant="text" @click="saveInviteFriendModal">
+                    <v-btn color="primary" variant="text" @click="saveInviteFriendModal">
                         Inviter
                     </v-btn>
                 </v-card-actions>

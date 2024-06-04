@@ -16,8 +16,8 @@
         </v-card-text>
         <v-card-actions class="pa-0">
             <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" @click="emit('closeAddFriendModalEmit')">Annuler</v-btn>
-            <v-btn color="green darken-1" @click="addFriend">Ajouter</v-btn>
+            <v-btn color="error" @click="emit('closeAddFriendModalEmit')">Annuler</v-btn>
+            <v-btn color="primary" @click="addFriend">Ajouter</v-btn>
             <v-spacer></v-spacer>
         </v-card-actions>
     </v-card>

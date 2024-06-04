@@ -4,9 +4,10 @@
         <template v-slot:top>
             <v-toolbar flat>
                 <v-toolbar-title>Mes amis <v-icon color="red-accent-4">mdi-heart-circle</v-icon></v-toolbar-title>
-                <v-divider class="mx-4" inset vertical></v-divider>
-                <v-spacer></v-spacer>
             </v-toolbar>
+        </template>
+        <template v-slot:item.presentation="{ item }">
+            {{ item.firstname }} {{ item.lastname }} ({{ item.email }})
         </template>
         <template v-slot:item.friendSince="{ item }">
             {{ formatFriendshipDate(item) }}
@@ -29,16 +30,16 @@ import { User } from '@/types/User';
 import DeleteFriendModal from '../modal/DeleteFriendModal.vue';
 import { VDataTable } from 'vuetify/labs/VDataTable'
 import { formatDate } from '@/service';
+import { useDisplay } from 'vuetify'
+const { mdAndUp } = useDisplay()
 
 const userStore = useUserStore();
 const showDeleteModal = ref(false);
 const friendToDelete = ref<User | null>(null);
 
 const headers = [
-    { title: 'Prénom', key: 'firstname', sortable: false },
-    { title: 'Nom', key: 'lastname', sortable: false },
-    { title: 'Email', key: 'email', sortable: false },
-    { title: 'Amitiée née le', key: 'friendSince', sortable: false },
+    { title: 'Utilisateur', key: 'presentation', sortable: false },
+    { title: 'Depuis le', key: 'friendSince', sortable: false },
     { title: 'Action', key: 'action', sortable: false },
 ];
 

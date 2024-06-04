@@ -6,8 +6,8 @@
             </v-card-title>
             <v-card-actions class="pa-0">
                 <v-spacer></v-spacer>
-                <v-btn color="blue-darken-1" variant="text" @click="closeRemoveListModal">Annuler</v-btn>
-                <v-btn color="blue-darken-1" variant="text" @click="RemoveListConfirm">OK</v-btn>
+                <v-btn color="error" variant="text" @click="closeRemoveListModal">Annuler</v-btn>
+                <v-btn color="primary" variant="text" @click="RemoveListConfirm">OK</v-btn>
                 <v-spacer></v-spacer>
             </v-card-actions>
         </v-card>

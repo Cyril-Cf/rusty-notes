@@ -1,5 +1,5 @@
 <template>
-    <v-container class="mx-10 my-5 mx-auto" fluid style="width: 80vw;">
+    <v-container class="mx-10 my-5 mx-auto" fluid :style="mdAndUp ? 'width: 80vw' : 'style: 95vw'">
         <v-row no-gutters class="mb-5">
             <v-btn color="primary" @click="showAddFriendModal = true">Ajouter un ami</v-btn>
         </v-row>
@@ -27,7 +27,8 @@ import router from "@/router";
 import MyFriendsList from '@/components/friend/list-friend/MyFriendsList.vue';
 import FriendDemandList from '@/components/friend/list-friend/FriendDemandList.vue';
 import AddFriendModal from '@/components/friend/modal/AddFriendModal.vue';
-
+import { useDisplay } from 'vuetify'
+const { mdAndUp } = useDisplay()
 const userStore = useUserStore();
 const showAddFriendModal = ref(false);
 

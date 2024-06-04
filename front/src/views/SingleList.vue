@@ -11,10 +11,8 @@
                     <template v-slot:top>
                         <v-toolbar flat>
                             <v-toolbar-title><span clas="text-h1">{{ listStore.selectedList.name }}</span> <span
-                                    class="text-subtitle-1">{{
+                                    :class="mdAndUp ? 'text-subtitle-1' : 'text-subtitle-2'">{{
                                         permissionText }}</span></v-toolbar-title>
-                            <v-divider class="mx-4" inset vertical></v-divider>
-                            <v-spacer></v-spacer>
                             <v-tooltip>
                                 <template v-slot:activator="{ props }">
                                     <span v-bind="props"><v-icon @click="addItemDialog = true" color="primary"
@@ -74,7 +72,8 @@ import { ListPermission } from "@/types/List";
 import ButtonGoBackToMyLists from "@/components/list/common/ButtonGoBackToMyLists.vue";
 import { VDataTable } from 'vuetify/labs/VDataTable';
 import RemoveListModal from '@/components/list/modal/RemoveListModal.vue';
-
+import { useDisplay } from 'vuetify'
+const { mdAndUp } = useDisplay()
 const userStore = useUserStore();
 const listStore = useListStore();
 const addItemDialog = ref(false);
@@ -96,13 +95,13 @@ const canModify = () => {
 
 const permissionText = computed(() => {
     if (listStore.selectedList?.isOwner) {
-        return '(propriétaire de la liste)';
+        return '(Propriétaire)';
     }
     if (listStore.selectedList?.listPermission === ListPermission.CAN_SEE_AND_MODIFY) {
-        return '(invité - peut modifier)';
+        return '(Peut modifier)';
     }
     if (listStore.selectedList?.listPermission === ListPermission.CAN_SEE_BUT_NOT_MODIFY) {
-        return '(invité - ne peut pas modifier)';
+        return '(Ne peut pas modifier)';
     }
     return ''
 });

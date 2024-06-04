@@ -89,21 +89,6 @@ const routes = [
     ],
   },
   {
-    path: '/admin_secure',
-    component: () => import('@/layouts/default/Default.vue'),
-    children: [
-      {
-        path: '',
-        name: 'admin-secure',
-        component: () => import('@/views/AdminSecure.vue'),
-        meta: {
-          isAuthenticated: true,
-          // requiredRole: ['admin'],
-        },
-      },
-    ],
-  },
-  {
     path: '/unauthorized',
     component: () => import('@/layouts/default/Default.vue'),
     children: [
