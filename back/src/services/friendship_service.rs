@@ -66,7 +66,6 @@ fn add_friendship(
     notification_server: &Addr<NotificationServer>,
 ) -> Result<AddFriendshipResult, diesel::result::Error> {
     let friendship = NewFriendship {
-        id: Uuid::new_v4(),
         user_who_asked_id: user_id,
         user_who_got_asked_id: user_friend_id,
         is_validated: false,

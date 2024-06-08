@@ -1,5 +1,5 @@
 use crate::graphql_logic::graphql::{DeleteResult, DeleteStatus, UpdateResult, UpdateStatus};
-use crate::models::item::{CreateItem, Item, NewItem, UpdateItem};
+use crate::models::item::{AddItemStatus, CreateItem, Item, NewItem, UpdateItem};
 use crate::schema::items::dsl::{id, items};
 use crate::services::list_service;
 use crate::web_socket_logic::web_socket::{
@@ -10,31 +10,38 @@ use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::r2d2::ConnectionManager;
 use diesel::r2d2::PooledConnection;
+use juniper::GraphQLObject;
 use uuid::Uuid;
+
+#[derive(Debug, GraphQLObject)]
+pub struct AddItemResult {
+    pub status: AddItemStatus,
+}
 
 pub fn find_one(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     item_id: Uuid,
 ) -> Result<Option<Item>, diesel::result::Error> {
-    match items.filter(id.eq(item_id)).first::<Item>(conn) {
-        Ok(item) => Ok(Some(item)),
-        Err(_) => Ok(None),
-    }
+    items.filter(id.eq(item_id)).first::<Item>(conn).optional()
 }
 
 pub fn create_item(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     input: CreateItem,
     notification_server: &Addr<NotificationServer>,
-) -> Result<Item, diesel::result::Error> {
+) -> Result<AddItemResult, diesel::result::Error> {
     let new_item = NewItem {
-        id: Uuid::new_v4(),
-        name: input.name,
-        is_checked: false,
-        item_type: input.item_type,
+        content: input.content,
+        deadline_date: input.deadline_date,
+        media_url: input.media_url,
+        priority_type: input.priority_type,
+        website_url: input.website_url,
+        is_checked: input.is_checked,
         list_id: input.list_id,
+        item_type_id: input.item_type_id,
+        person_in_charge: input.person_in_charge,
     };
-    let item = diesel::insert_into(items)
+    diesel::insert_into(items)
         .values(&new_item)
         .get_result::<Item>(conn)?;
     if let Some(list) = list_service::find_one(conn, input.list_id)? {
@@ -46,7 +53,9 @@ pub fn create_item(
             });
         }
     };
-    Ok(item)
+    Ok(AddItemResult {
+        status: AddItemStatus::AddSuccessful,
+    })
 }
 
 pub fn delete_item(
@@ -94,16 +103,24 @@ pub fn update_item(
         });
     }
     let existing_item = existing_item.unwrap();
-    if existing_item.name != input.name
+    if existing_item.content != input.content
         || existing_item.is_checked != input.is_checked
-        || existing_item.item_type != input.item_type
+        || existing_item.deadline_date != input.deadline_date
+        || existing_item.website_url != input.website_url
+        || existing_item.media_url != input.media_url
+        || existing_item.priority_type != input.priority_type
+        || existing_item.person_in_charge != input.person_in_charge
     {
         let new_item = NewItem {
-            id: input.id,
-            name: input.name,
+            content: input.content,
+            deadline_date: input.deadline_date,
+            media_url: input.media_url,
+            priority_type: input.priority_type,
+            website_url: input.website_url,
             is_checked: input.is_checked,
             list_id: input.list_id,
-            item_type: input.item_type,
+            item_type_id: input.item_type_id,
+            person_in_charge: input.person_in_charge,
         };
         diesel::update(items.filter(id.eq(input.id)))
             .set(&new_item)

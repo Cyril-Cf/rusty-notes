@@ -28,12 +28,11 @@
                         </v-toolbar>
                     </template>
                     <template v-slot:item.box="{ item }">
-                        <div v-if="item.itemType === ItemType.CHECKBOX">
-                            <v-checkbox hide-details v-model="item.isChecked" :readonly="!canModify()"
-                                @click="updateItem(item)"></v-checkbox>
+                        <div v-if="item.itemType.itemTypeVariation === ItemTypeVariation.CHECKBOX">
+                            <v-checkbox hide-details v-model="item.isChecked" :readonly="!canModify()"></v-checkbox>
                         </div>
-                        <div v-else-if="item.itemType === ItemType.BULLET_POINT">
-                            <v-icon>mdi-circle-small</v-icon> {{ item.name }}
+                        <div v-else-if="item.itemType.itemTypeVariation === ItemTypeVariation.CONTENT">
+                            <v-icon>mdi-circle-small</v-icon> {{ item.content }}
                         </div>
                     </template>
                     <template v-slot:item.action="{ item }">
@@ -64,10 +63,10 @@ import AddItemModal from '@/components/item/modal/AddItemModal.vue'
 import { useListStore } from "@/store/listStore";
 import { useUserStore } from "@/store/userStore";
 import { computed, onMounted, ref } from "vue";
+import { ItemTypeVariation } from "@/types/Item";
 import authPromise from "@/plugins/keycloak";
 import router from "@/router";
 import { useRoute } from 'vue-router';
-import { ItemType, Item } from '@/types/Item';
 import { ListPermission } from "@/types/List";
 import ButtonGoBackToMyLists from "@/components/list/common/ButtonGoBackToMyLists.vue";
 import { VDataTable } from 'vuetify/labs/VDataTable';
@@ -115,14 +114,14 @@ const deleteList = async () => {
     }
 }
 
-const updateItem = async (index: number) => {
-    const listId = listStore.selectedList?.id;
-    const item = listStore.selectedItems?.at(index);
-    if (listId && item) {
-        const itemToUpdate: Item = { id: item.id, name: item.name, isChecked: !item.isChecked.valueOf(), listId: item.listId, itemType: item.itemType };
-        await listStore.updateItemFromList(itemToUpdate, listId);
-    }
-}
+// const updateItem = async (index: number) => {
+//     const listId = listStore.selectedList?.id;
+//     const item = listStore.selectedItems?.at(index);
+//     if (listId && item) {
+//         const itemToUpdate: Item = { id: item.id, name: item.name, isChecked: !item.isChecked.valueOf(), listId: item.listId, itemType: item.itemType };
+//         await listStore.updateItemFromList(itemToUpdate, listId);
+//     }
+// }
 
 const deleteItem = async (index: number) => {
     const listId = listStore.selectedList?.id;

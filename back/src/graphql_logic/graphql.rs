@@ -1,20 +1,22 @@
 use super::context::GraphQLContext;
 use crate::models::friendship::FriendshipGraphQL;
-use crate::models::item::{CreateItem, Item, UpdateItem};
+use crate::models::item::{CreateItem, UpdateItem};
 use crate::models::list::{CreateList, ListGraphQL};
 use crate::models::list_tag::{CreateListTag, ListTag};
+use crate::models::list_type::ListTypeGraphQL;
 use crate::models::notification::{CreateNotification, Notification, UpdateNotificationGQL};
 use crate::models::user::{CreateUser, ModifyUser, User};
 use crate::models::user_list::ListPermission;
 use crate::services::friendship_service::{
     self, AcceptFriendshipResult, AddFriendshipResult, RemoveFriendshipResult,
 };
-use crate::services::item_service;
+use crate::services::item_service::{self, AddItemResult};
 use crate::services::list_service::{
     self, AcceptListInvitationResult, AddFriendToMyListResult, AddListResult,
     RefuseListInvitationResult, RemoveFriendFromMyListResult,
 };
 use crate::services::list_tag_service;
+use crate::services::list_type_service;
 use crate::services::notification_service;
 use crate::services::user_service;
 use juniper::FieldError;
@@ -67,6 +69,15 @@ impl Query {
     ) -> FieldResult<Vec<FriendshipGraphQL>> {
         let conn = &mut context.pool.get()?;
         let res = friendship_service::get_user_friendships(conn, user_id);
+        graphql_translate(res)
+    }
+
+    // LIST TYPES
+    pub fn find_all_list_types_with_allowed_item_types(
+        context: &GraphQLContext,
+    ) -> FieldResult<Vec<ListTypeGraphQL>> {
+        let conn = &mut context.pool.get()?;
+        let res = list_type_service::find_all_with_item_types(conn);
         graphql_translate(res)
     }
 
@@ -249,7 +260,7 @@ impl Mutation {
     // }
 
     // ITEM
-    pub fn create_item(context: &GraphQLContext, input: CreateItem) -> FieldResult<Item> {
+    pub fn create_item(context: &GraphQLContext, input: CreateItem) -> FieldResult<AddItemResult> {
         let conn = &mut context.pool.get()?;
         let res = item_service::create_item(conn, input, &context.notification_server);
         graphql_translate(res)

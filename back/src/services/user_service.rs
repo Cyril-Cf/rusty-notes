@@ -43,7 +43,6 @@ pub fn create_user(
     input: CreateUser,
 ) -> Result<User, diesel::result::Error> {
     let new_user = NewUser {
-        id: Uuid::new_v4(),
         email: input.email,
         firstname: input.firstname,
         lastname: input.lastname,

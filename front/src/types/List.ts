@@ -1,4 +1,4 @@
-import { Item } from './Item';
+import { Item, ItemType } from './Item';
 import { Tag } from './Tag';
 import { User } from './User';
 
@@ -15,14 +15,16 @@ export interface List {
     listPermission: ListPermission;
 }
 
-export enum ListType {
-    TO_DO = "TO_DO",
-    TO_BUY = "TO_BUY"
+export interface ListType {
+    id: string;
+    description: string;
+    name: string;
+    allowedItemTypes: ItemType[]
 }
 
 export interface NewList {
     name: string;
-    listType: string;
+    listTypeId: string;
     userId: string;
 }
 

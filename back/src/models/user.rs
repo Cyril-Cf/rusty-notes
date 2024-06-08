@@ -31,7 +31,6 @@ pub struct UserChangeset {
 #[derive(Insertable)]
 #[diesel(table_name = users)]
 pub struct NewUser {
-    pub id: Uuid,
     pub firstname: String,
     pub lastname: String,
     pub email: String,

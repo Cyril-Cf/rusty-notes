@@ -5,7 +5,11 @@ export const findAllListForUserWithTags = gql`
         findAllListForUserWithTags(userId: $userId) {
             id
             name
-            listType
+            listType {
+                id
+                name
+                description
+            }
             isOwner
             isValidated
             listPermission

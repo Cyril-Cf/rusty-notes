@@ -31,7 +31,6 @@ pub enum NotifType {
 #[derive(Insertable)]
 #[diesel(table_name = notifications)]
 pub struct NewNotification {
-    pub id: Uuid,
     pub has_been_read: bool,
     pub notif_type: NotifType,
     pub user_id: Uuid,

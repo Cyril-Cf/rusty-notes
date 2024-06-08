@@ -36,7 +36,6 @@ pub fn create_notification(
     input: CreateNotification,
 ) -> Result<Notification, diesel::result::Error> {
     let new_notification = NewNotification {
-        id: Uuid::new_v4(),
         has_been_read: false,
         notif_type: input.notif_type,
         user_id: input.user_id,

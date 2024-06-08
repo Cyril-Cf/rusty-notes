@@ -1,6 +1,6 @@
-use super::item::Item;
 use super::list_tag::ListTag;
 use super::user_list::ListPermission;
+use super::{item::ItemGraphQL, list_type::ListTypeGraphQL};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use juniper::{GraphQLEnum, GraphQLInputObject, GraphQLObject};
@@ -8,23 +8,17 @@ use uuid::Uuid;
 
 use crate::schema::lists;
 
-#[derive(Queryable, Selectable, Identifiable, Debug, Clone)]
+#[derive(
+    Queryable, Insertable, Selectable, Identifiable, Associations, Debug, GraphQLObject, Clone,
+)]
+#[diesel(belongs_to(super::list_type::ListType))]
 #[diesel(table_name = lists)]
 pub struct List {
     pub id: Uuid,
     pub name: String,
-    pub list_type: ListType,
+    pub list_type_id: Uuid,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-}
-
-#[derive(diesel_derive_enum::DbEnum, Debug, GraphQLEnum, Clone)]
-#[ExistingTypePath = "crate::schema::sql_types::ListType"]
-pub enum ListType {
-    #[db_rename = "TO_DO"]
-    ToDo,
-    #[db_rename = "TO_BUY"]
-    ToBuy,
 }
 
 #[derive(Debug, GraphQLObject)]
@@ -32,9 +26,8 @@ pub enum ListType {
 pub struct ListGraphQL {
     pub id: Uuid,
     pub name: String,
-    pub list_type: ListType,
     pub tags: Vec<ListTag>,
-    pub items: Vec<Item>,
+    pub items: Vec<ItemGraphQL>,
     pub users_validated: Vec<UserListGraphQL>,
     pub users_awaiting_validation: Vec<UserListGraphQL>,
     pub is_owner: bool,
@@ -42,6 +35,7 @@ pub struct ListGraphQL {
     pub list_permission: ListPermission,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+    pub list_type: ListTypeGraphQL,
 }
 
 #[derive(Debug, GraphQLObject)]
@@ -62,28 +56,25 @@ pub struct UserListGraphQL {
 pub struct ListChangeset {
     pub id: Option<Uuid>,
     pub name: Option<String>,
-    pub list_type: Option<ListType>,
 }
 
 #[derive(Insertable)]
 #[diesel(table_name = lists)]
 pub struct NewList {
-    pub id: Uuid,
     pub name: String,
-    pub list_type: ListType,
+    pub list_type_id: Uuid,
 }
 
 #[derive(GraphQLInputObject)]
 pub struct CreateList {
     pub name: String,
-    pub list_type: ListType,
     pub user_id: Uuid,
+    pub list_type_id: Uuid,
 }
 
 #[derive(GraphQLInputObject)]
 pub struct UpdateList {
     pub name: String,
-    pub list_type: ListType,
 }
 
 #[derive(Debug, GraphQLEnum)]

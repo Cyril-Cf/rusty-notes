@@ -1,21 +1,45 @@
 export interface Item {
     id: string;
-    name: string;
-    isChecked: boolean;
-    listId: String;
+    content?: string;
+    isChecked?: boolean;
+    mediaUrl?: string;
+    websiteUrl?: string;
+    personInCharge?: string;
+    priorityType?: PriorityType;
     itemType: ItemType;
+    deadlineDate?: Date;
     createdAt: Date;
     updatedAt: Date;
 }
 
-export enum ItemType {
+export interface ItemType {
+    id: string;
+    itemTypeVariation: ItemTypeVariation;
+}
+
+export enum ItemTypeVariation {
+    CONTENT = "CONTENT",
     CHECKBOX = "CHECKBOX",
-    BULLET_POINT = "BULLET_POINT"
+    MEDIA_URL = "MEDIA_URL",
+    WEBSITE_URL = "WEBSITE_URL",
+    PERSON_IN_CHARGE = "PERSON_IN_CHARGE",
+    DEADLINE_DATE = "DEADLINE_DATE"
+}
+
+export enum PriorityType {
+    LOW = "LOW",
+    MIDDLE = "MIDDLE",
+    HIGH = "HIGH"
 }
 
 export interface NewItem {
-    name: String;
-    isChecked: boolean;
-    listId: String;
-    itemType: ItemType;
+    content?: string;
+    isChecked?: boolean;
+    mediaUrl?: string;
+    websiteUrl?: string;
+    personInCharge?: string;
+    priorityType?: PriorityType;
+    deadlineDate?: Date;
+    itemTypeId: string;
+    listId: string;
 }

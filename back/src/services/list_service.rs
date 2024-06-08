@@ -1,12 +1,13 @@
 use crate::graphql_logic::graphql::{DeleteResult, DeleteStatus};
 use crate::models::friendship::FriendshipState;
-use crate::models::item::Item;
+use crate::models::item::{Item, ItemGraphQL};
 use crate::models::list::{
     AcceptListInvitationStatus, AddFriendToMyListStatus, AddListStatus, CreateList, List,
     ListGraphQL, NewList, RefuseListInvitationStatus, RemoveFriendFromMyListStatus,
     UserListGraphQL,
 };
 use crate::models::list_tag::ListTag;
+use crate::models::list_type::ListTypeGraphQL;
 use crate::models::user::User;
 use crate::models::user_list::{
     AddUserToListStatus, ListPermission, NewUserList, RemoveUserFromListStatus, UserList,
@@ -19,6 +20,8 @@ use crate::schema::user_lists::dsl::{
 };
 use crate::schema::users::dsl::users;
 use crate::services::friendship_service;
+use crate::services::item_type_service;
+use crate::services::list_type_service;
 use crate::services::user_service;
 use crate::web_socket_logic::web_socket::{
     MessageType, NotificationServer, SendFriendshipNotification,
@@ -61,11 +64,15 @@ pub fn find_one(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     list_id: Uuid,
 ) -> Result<Option<List>, diesel::result::Error> {
-    match lists.filter(ListId.eq(list_id)).first::<List>(conn) {
+    let query = lists.filter(ListId.eq(list_id));
+
+    match query.first::<List>(conn) {
         Ok(list) => Ok(Some(list)),
-        Err(_) => Ok(None),
+        Err(diesel::result::Error::NotFound) => Ok(None),
+        Err(err) => Err(err),
     }
 }
+
 fn find_all_list_for_user(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     user_id: Uuid,
@@ -97,14 +104,31 @@ fn enrich_list_with_relations(
         list.tags = tags;
     }
     if add_items {
+        let mut vec_items_graphql: Vec<ItemGraphQL> = Vec::new();
         let list_items: Vec<Item> = items.filter(ItemListId.eq(list.id)).load::<Item>(conn)?;
-        list.items = list_items;
+        for item in list_items {
+            let item_type = item_type_service::find_one(conn, item.item_type_id)?.unwrap();
+            vec_items_graphql.push(ItemGraphQL {
+                content: item.content,
+                created_at: item.created_at,
+                deadline_date: item.deadline_date,
+                id: item.id,
+                is_checked: item.is_checked,
+                media_url: item.media_url,
+                person_in_charge: item.person_in_charge,
+                priority_type: item.priority_type,
+                updated_at: item.updated_at,
+                website_url: item.website_url,
+                item_type,
+            })
+        }
+        list.items = vec_items_graphql;
     }
     if add_users {
         let now: DateTime<Utc> = Utc::now();
         let list_objet = List {
             id: list.id,
-            list_type: list.list_type.clone(),
+            list_type_id: list.list_type.id,
             name: list.name.clone(),
             created_at: now.naive_utc(),
             updated_at: now.naive_utc(),
@@ -168,11 +192,20 @@ pub fn find_all_list_for_user_with_tags(
     let now: DateTime<Utc> = Utc::now();
     // Fetch tags and items for each list
     for list in all_user_lists.iter() {
+        let list_type = list_type_service::find_one(conn, list.list_type_id)?.unwrap();
+        let allowed_item_types =
+            list_type_service::get_allowed_items_for_one_list_type(conn, list_type.id)?;
+        let list_type = ListTypeGraphQL {
+            allowed_item_types,
+            description: list_type.description,
+            id: list_type.id,
+            name: list_type.name,
+        };
         let association_table_values = get_list_user_association(conn, list.id, user_id)?.unwrap();
         let mut current_list = ListGraphQL {
             id: list.id,
             name: list.name.clone(),
-            list_type: list.list_type.clone(),
+            list_type,
             is_owner: association_table_values.is_owner,
             is_validated: association_table_values.is_validated,
             list_permission: association_table_values.list_permission,
@@ -201,10 +234,19 @@ pub fn find_one_with_items_and_tags(
     let list = list.unwrap();
     let now: DateTime<Utc> = Utc::now();
     let association_table_values = get_list_user_association(conn, list.id, user_id)?.unwrap();
+    let list_type = list_type_service::find_one(conn, list.list_type_id)?.unwrap();
+    let allowed_item_types =
+        list_type_service::get_allowed_items_for_one_list_type(conn, list_type.id)?;
+    let list_type = ListTypeGraphQL {
+        allowed_item_types,
+        description: list_type.description,
+        id: list_type.id,
+        name: list_type.name,
+    };
     let mut res = ListGraphQL {
         id: list.id,
         name: list.name,
-        list_type: list.list_type,
+        list_type,
         is_owner: association_table_values.is_owner,
         is_validated: association_table_values.is_validated,
         list_permission: association_table_values.list_permission,
@@ -269,9 +311,8 @@ pub fn create_list(
     notification_server: &Addr<NotificationServer>,
 ) -> Result<AddListResult, diesel::result::Error> {
     let new_list = NewList {
-        id: Uuid::new_v4(),
         name: input.name,
-        list_type: input.list_type,
+        list_type_id: input.list_type_id,
     };
     let list = diesel::insert_into(lists)
         .values(&new_list)

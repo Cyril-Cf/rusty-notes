@@ -5,17 +5,28 @@ export const findOneWithItemsAndTags = gql`
         findOneWithItemsAndTags(listId: $listId, userId: $userId) {
             id
             name
-            listType
-            isOwner
-            isValidated
-            listPermission
-            items {
+            listType {
                 id
                 name
-                createdAt
+                description
+                allowedItemTypes {
+                    id
+                    itemTypeVariation
+                }
+            }
+            isOwner
+            items {
+                id
+                content
                 isChecked
-                itemType
-                listId
+                mediaUrl
+                websiteUrl
+                personInCharge
+                priorityType
+                itemType {
+                    itemTypeVariation
+                }
+                deadlineDate
             }
             tags {
                 id

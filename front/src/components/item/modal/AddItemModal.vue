@@ -9,8 +9,8 @@
         <v-card-text>
             <v-text-field v-model="newItemName" :rules="[rules.required]" required
                 label="Nom de l'élément"></v-text-field>
-            <v-select v-model="newItemType" :rules="[rules.required]" required :items="itemTypeItems" item-title="text"
-                item-value="value" label="Type d'élément"></v-select>
+            <v-select v-model="newItemTypeId" :rules="[rules.required]" required :items="itemTypeItems"
+                item-title="text" item-value="value" label="Type d'élément"></v-select>
         </v-card-text>
         <v-card-actions class="pa-0 d-flex justify-center">
             <v-btn color="error" @click="emit('closeItemModalEmit')">Annuler</v-btn>
@@ -20,8 +20,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ItemType, NewItem } from '@/types/Item';
-import { ref, defineEmits } from 'vue';
+import { NewItem } from '@/types/Item';
+import { ref, defineEmits, computed } from 'vue';
 import { useUserStore } from "@/store/userStore";
 import { useListStore } from "@/store/listStore";
 
@@ -33,7 +33,7 @@ const rules = {
 const userStore = useUserStore();
 const listStore = useListStore();
 const newItemName = ref('');
-const newItemType = ref<ItemType | undefined>(undefined);
+const newItemTypeId = ref<String | undefined>(undefined);
 
 interface ItemTypeInSelect {
     text: String;
@@ -43,18 +43,27 @@ interface ItemTypeInSelect {
 const addItem = async () => {
     const userId = userStore.currentUser?.id;
     const listId = listStore.selectedList?.id;
-    if (userId && listId && newItemType.value) {
-        const newItem: NewItem = { name: newItemName.value.trim(), isChecked: false, listId: listId, itemType: newItemType.value };
+    if (userId && listId && newItemTypeId.value) {
+        const newItem: NewItem = { content: "test", listId: listId, itemTypeId: newItemTypeId.value.valueOf() };
         await listStore.addItemToList(listId, newItem);
         newItemName.value = '';
         emit('closeItemModalEmit');
     }
 }
 
-const itemTypeItems: ItemTypeInSelect[] = [
-    { text: 'Case à cocher', value: ItemType.CHECKBOX },
-    { text: 'Puce', value: ItemType.BULLET_POINT }
-];
+const itemTypeItems = computed<ItemTypeInSelect[]>(() => {
+    if (listStore.selectedList && listStore.selectedList.listType.allowedItemTypes.length > 0) {
+        return listStore.selectedList!.listType.allowedItemTypes.map(itemType => ({
+            text: itemType.itemTypeVariation,
+            value: itemType.id
+        }));
+    } else {
+        return [];
+    }
+});
+
+console.log(itemTypeItems.value)
+
 </script>
 
 <style scoped></style>

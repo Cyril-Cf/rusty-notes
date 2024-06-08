@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useListStore } from "@/store/listStore";
 import { useUserStore } from "@/store/userStore";
 import { ListType, NewList } from '@/types/List';
@@ -38,18 +38,24 @@ interface ListTypeInSelect {
     value: String;
 }
 
-const listTypeItems: ListTypeInSelect[] = [
-    { text: 'À faire', value: ListType.TO_DO },
-    { text: 'À acheter', value: ListType.TO_BUY }
-];
-
+const listTypeItems = computed<ListTypeInSelect[]>(() => {
+    if (listStore.listTypes.length > 0) {
+        return listStore.listTypes.map(listType => ({
+            text: listType.name,
+            value: listType.id
+        }));
+    } else {
+        return [];
+    }
+});
+console.log(listStore.listTypes);
 const submit = async () => {
     if (valid.value) {
         let userId = userStore.currentUser?.id;
         if (userId) {
 
             const input: NewList = {
-                listType: newList.value.listType?.value as ListType,
+                listTypeId: newList.value.listType!.value.valueOf(),
                 name: newList.value.name,
                 userId: userId.toString()
             };

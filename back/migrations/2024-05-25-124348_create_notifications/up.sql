@@ -4,7 +4,7 @@ CREATE TYPE notif_type AS ENUM (
     'SHARED_LIST_MODIFIED'
 );
 CREATE TABLE notifications (
-    id UUID PRIMARY KEY NOT NULL,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
     has_been_read BOOLEAN NOT NULL,
     notif_type notif_type NOT NULL,
     user_id UUID NOT NULL,

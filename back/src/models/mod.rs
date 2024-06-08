@@ -1,7 +1,10 @@
+pub mod allowed_items;
 pub mod friendship;
 pub mod item;
+pub mod item_type;
 pub mod list;
 pub mod list_tag;
+pub mod list_type;
 pub mod notification;
 pub mod user;
 pub mod user_list;

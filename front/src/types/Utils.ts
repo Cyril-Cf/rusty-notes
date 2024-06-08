@@ -58,3 +58,12 @@ export enum AcceptListInvitationStatus {
     ACCEPT_SUCCESSFUL = 'ACCEPT_SUCCESSFUL',
     ERR_NO_INVITATION_FOUND = 'ERR_NO_INVITATION_FOUND',
 }
+
+export interface AddItemResult {
+    status: AddItemStatus;
+}
+
+export enum AddItemStatus {
+    ADD_SUCCESSFUL = 'ADD_SUCCESSFUL',
+    ERR_NO_LIST_FOUND = 'ERR_NO_LIST_FOUND',
+}

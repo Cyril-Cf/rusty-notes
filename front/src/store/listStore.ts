@@ -12,12 +12,13 @@ import { findAllListForUserWithTags } from '../graphql/queries/list/findAllListF
 import { findOneWithItemsAndTags } from '../graphql/queries/list/findOneWithItemsAndTags.query'
 import { createList } from '../graphql/mutations/list/createList.mutation'
 import { deleteList } from '../graphql/mutations/list/deleteList.mutation'
-import { List, ListPermission, NewList } from '../types/List';
+import { List, ListPermission, ListType, NewList } from '../types/List';
 import { NewItem, Item } from '../types/Item'
-import { DeleteStatus, DeleteResult, AddFriendToMyListStatus, AddFriendToMyListResult, RemoveFriendFromMyListResult, RemoveFriendFromMyListStatus, RefuseListInvitationResult, RefuseListInvitationStatus, AcceptListInvitationResult, AcceptListInvitationStatus } from '@/types/Utils';
+import { DeleteStatus, DeleteResult, AddFriendToMyListStatus, AddFriendToMyListResult, RemoveFriendFromMyListResult, RemoveFriendFromMyListStatus, RefuseListInvitationResult, RefuseListInvitationStatus, AcceptListInvitationResult, AcceptListInvitationStatus, AddItemResult, AddItemStatus } from '@/types/Utils';
 import { toast } from 'vue3-toastify';
 import { useUserStore } from './userStore'
 import { User } from '@/types/User'
+import { findAllListTypesWithAllowedItemTypes } from '@/graphql/queries/list/findAllListTypesWithAllowedItemTypes.query'
 
 export const useListStore = defineStore('list', () => {
     const userStore = useUserStore();
@@ -29,6 +30,7 @@ export const useListStore = defineStore('list', () => {
     const selectedItems = ref<Item[]>([])
     const usersValidated = ref<User[]>([]);
     const usersAwaitingValidation = ref<User[]>([]);
+    const listTypes = ref<ListType[]>([]);
 
     async function fetchLists(userId: String) {
         const { data } = await apolloClient.query({
@@ -131,7 +133,14 @@ export const useListStore = defineStore('list', () => {
             fetchPolicy: 'no-cache'
         });
         if (data && data.createItem) {
-            await fetchOne(listId);
+            const res: AddItemResult = data.createItem;
+            if (res.status == AddItemStatus.ADD_SUCCESSFUL) {
+                await fetchOne(listId);
+            } else {
+                toast.error("Erreur lors de l'ajout !", {
+                    position: toast.POSITION.BOTTOM_CENTER,
+                });
+            }
         }
     }
 
@@ -230,6 +239,17 @@ export const useListStore = defineStore('list', () => {
         }
     }
 
+    async function getAllListTypeWithAllowedItemTypes() {
+        const { data } = await apolloClient.query({
+            query: findAllListTypesWithAllowedItemTypes,
+            variables: {},
+            fetchPolicy: 'no-cache'
+        });
+        if (data && data.findAllListTypesWithAllowedItemTypes) {
+            listTypes.value = data.findAllListTypesWithAllowedItemTypes
+        }
+    }
+
 
     return {
         ownedLists,
@@ -239,6 +259,7 @@ export const useListStore = defineStore('list', () => {
         selectedItems,
         usersValidated,
         usersAwaitingValidation,
+        listTypes,
         fetchLists,
         createNewList,
         deleteSelectedList,
@@ -249,6 +270,7 @@ export const useListStore = defineStore('list', () => {
         inviteUserToMyList,
         removeAUserFromList,
         acceptListInvitationStore,
-        refuseListInvitationStore
+        refuseListInvitationStore,
+        getAllListTypeWithAllowedItemTypes
     }
 })

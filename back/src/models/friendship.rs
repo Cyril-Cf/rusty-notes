@@ -23,7 +23,6 @@ pub struct Friendship {
 #[derive(Insertable)]
 #[diesel(table_name = friendships)]
 pub struct NewFriendship {
-    pub id: Uuid,
     pub user_who_asked_id: Uuid,
     pub user_who_got_asked_id: Uuid,
     pub is_validated: bool,

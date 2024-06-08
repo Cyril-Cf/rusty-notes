@@ -27,7 +27,6 @@ pub struct ListTagChangeset {
 #[derive(Insertable)]
 #[diesel(table_name = list_tags)]
 pub struct NewListTag {
-    pub id: Uuid,
     pub name: String,
     pub list_id: Uuid,
 }
