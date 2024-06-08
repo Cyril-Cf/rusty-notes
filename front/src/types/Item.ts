@@ -4,6 +4,8 @@ export interface Item {
     isChecked: boolean;
     listId: String;
     itemType: ItemType;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export enum ItemType {

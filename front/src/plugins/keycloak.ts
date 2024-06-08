@@ -68,6 +68,14 @@ class Auth {
   public userId(): string | undefined {
     return this.keycloak.subject;
   }
+
+  public getRegisterUrl(): string {
+    return this.keycloak.createRegisterUrl()
+  }
+
+  public getLoginUrl(): string {
+    return this.keycloak.createLoginUrl()
+  }
 }
 
 const instance: Promise<Auth> = (async () => {

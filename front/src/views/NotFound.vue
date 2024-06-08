@@ -3,7 +3,7 @@
     <v-main class="d-flex align-center justify-center">
       <v-row class="d-flex align-center justify-center text-center">
         <v-col cols="12">
-          <h1>404 - Page Not Found</h1>
+          <h1>404 - Page non trouvée</h1>
         </v-col>
         <v-col cols="12">
           <router-link :to="{ name: 'home' }">

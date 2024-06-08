@@ -1,10 +1,11 @@
+use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use juniper::{GraphQLInputObject, GraphQLObject};
 use uuid::Uuid;
 
 use crate::schema::users;
 
-#[derive(Queryable, Identifiable, Debug, GraphQLObject)]
+#[derive(Queryable, Selectable, Identifiable, Debug, GraphQLObject)]
 #[diesel(table_name = users)]
 #[graphql(description = "A user")]
 pub struct User {
@@ -13,6 +14,8 @@ pub struct User {
     pub lastname: String,
     pub email: String,
     pub keycloak_uuid: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(AsChangeset)]

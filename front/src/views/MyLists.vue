@@ -1,74 +1,112 @@
 <template>
-    <div>
-        <h1>Mes listes</h1>
-        <v-container>
-            <v-row>
-                <v-col v-for="(list, index) in listStore.lists" :key="index">
-                    <v-card>
-                        <v-card-title>{{ list.name }}</v-card-title>
-                        <v-card-text>
-                            <v-chip v-for="(tag, index) in list.tags" :key="index" class="ma-1" outlined>{{ tag
-                                }}</v-chip>
-                        </v-card-text>
-                        <v-card-actions>
-                            <v-btn @click="goToSingleList(index)" color="primary">Détails</v-btn>
-                            <v-btn @click="deleteList(index)" color="error">Supprimer</v-btn>
-                        </v-card-actions>
-                    </v-card>
-                </v-col>
-            </v-row>
-            <v-row>
-                <v-col cols="12">
-                    <v-btn @click="showAddListDialog" color="primary">Ajouter une liste</v-btn>
-                </v-col>
-            </v-row>
-        </v-container>
-    </div>
+    <v-container class="mx-10 my-5 mx-auto" fluid style="width: 80vw;">
+        <v-row no-gutters>
+            <v-btn @click="pushToNewList" color="primary">Ajouter une liste</v-btn>
+        </v-row>
+        <v-row no-gutters>
+            <v-col cols="12">
+                <div class="text-h4 my-10">Mes notes</div>
+            </v-col>
+            <v-col cols="12" v-for="(list, index) in listStore.ownedLists" :key="index">
+                <ListItem :list="list" @deleteListEmit="deleteListOpenModale" @goToSingleListEmit="goToSingleList"
+                    @openSettingsEmit="openSettings" />
+            </v-col>
+        </v-row>
+        <v-divider class="my-4" v-if="listStore.sharedListsValidated.length > 0"></v-divider>
+        <v-row v-if="listStore.sharedListsValidated.length > 0">
+            <v-col cols="12">
+                <div class="text-h4 my-10">Mes notes partagées</div>
+            </v-col>
+            <v-col cols="12" v-for="(list, index) in listStore.sharedListsValidated" :key="index">
+                <ListItem :list="list" @goToSingleListEmit="goToSingleList" />
+            </v-col>
+        </v-row>
+        <v-divider class="my-4" v-if="listStore.sharedListToValidate.length > 0"></v-divider>
+        <v-row v-if="listStore.sharedListToValidate.length > 0">
+            <v-col cols="12">
+                <div class="text-h4 my-10">Mes invitations</div>
+            </v-col>
+            <v-col cols="12" v-for="(list, index) in listStore.sharedListToValidate" :key="index">
+                <ListItem :list="list" @acceptInvitationEmit="acceptInvitation"
+                    @refuseInvitationEmit="refuseInvitation" />
+            </v-col>
+        </v-row>
+        <v-dialog v-model="settingsDialog" max-width="600px">
+            <ListSettingModal @closeSettingsEmit="settingsDialog = false" />
+        </v-dialog>
+        <v-dialog v-model="removeListDialog" max-width="300px">
+            <RemoveListModal @closeRemoveListModalEmit="removeListDialog = false" @RemoveListConfirmEmit="deleteList" />
+        </v-dialog>
+    </v-container>
 </template>
 
 <script lang="ts" setup>
+import { ref, onMounted } from 'vue';
+import ListItem from '../components/list/list-list/ListItem.vue'
+import ListSettingModal from '@/components/list/modal/ListSettingModal.vue';
+import RemoveListModal from '../components/list/modal/RemoveListModal.vue'
 import { useListStore } from "@/store/listStore";
 import { useUserStore } from "@/store/userStore";
-import { onMounted } from "vue";
 import authPromise from "@/plugins/keycloak";
 import router from "@/router";
+import { List } from '@/types/List';
 
 const userStore = useUserStore();
 const listStore = useListStore();
+const settingsDialog = ref(false);
+const removeListDialog = ref(false);
+const listToRemoveId = ref<String | null>(null);
 
-const showAddListDialog = () => {
+const pushToNewList = () => {
     router.push({ path: "/add_list" });
 };
 
-const deleteList = async (index: any) => {
+const acceptInvitation = async (listId: String) => {
+    if (userStore.currentUser) {
+        listStore.acceptListInvitationStore(listId, userStore.currentUser.id)
+    }
+}
+
+const refuseInvitation = async (listId: String) => {
+    if (userStore.currentUser) {
+        listStore.refuseListInvitationStore(listId, userStore.currentUser.id)
+    }
+}
+
+const deleteListOpenModale = (listId: String) => {
+    listToRemoveId.value = listId;
+    removeListDialog.value = true;
+}
+
+const deleteList = async () => {
     const userId = userStore.currentUser?.id;
-    const listId = listStore.lists.at(index)?.id;
-    if (userId && listId) {
-        await listStore.deleteSelectedList(listId, userId);
+    if (userId && listToRemoveId.value) {
+        await listStore.deleteSelectedList(listToRemoveId.value, userId);
     }
-}
+    removeListDialog.value = false
+};
 
-const goToSingleList = (index: number) => {
-    const listId = listStore.lists.at(index)?.id;
-    if (listId) {
-        router.push({ path: `/single_list/${listId}` });
-    }
+const goToSingleList = (listId: string) => {
+    router.push({ path: `/single_list/${listId}` });
+};
 
-}
+const openSettings = async (list: List) => {
+    await listStore.fetchOne(list.id);
+    settingsDialog.value = true;
+};
 
 onMounted(async () => {
     authPromise.then(async (auth) => {
         if (auth.isAuthenticated()) {
-            const userStore = useUserStore();
             let userIsInDB = await userStore.DoesUserExistInDB(auth.userId()!);
             if (userIsInDB) {
                 let userId = userStore.currentUser?.id;
                 if (userId) {
-                    const listStore = useListStore();
                     listStore.fetchLists(userId);
+                    await userStore.getFriendships(userId);
                 }
             } else {
-                router.push({ path: "/subscription_more_infos/my_lists" });
+                router.push({ path: "/subscription_more_infos/my_notes" });
             }
         }
     });

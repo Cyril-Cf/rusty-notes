@@ -1,4 +1,3 @@
-// Composables
 import { createRouter, createWebHistory, RouteLocationRaw } from 'vue-router'
 import authPromise from '@/plugins/keycloak'
 
@@ -11,32 +10,6 @@ const routes = [
         path: '',
         name: 'home',
         component: () => import('@/views/Home.vue'),
-      },
-    ],
-  },
-  {
-    path: '/unsecure',
-    component: () => import('@/layouts/default/Default.vue'),
-    children: [
-      {
-        path: '',
-        name: 'unsecure',
-        component: () => import('@/views/UnSecure.vue'),
-      },
-    ],
-  },
-  {
-    path: '/user_secure',
-    component: () => import('@/layouts/default/Default.vue'),
-    children: [
-      {
-        path: '',
-        name: 'user-secure',
-        component: () => import('@/views/UserSecure.vue'),
-        meta: {
-          isAuthenticated: true,
-          // requiredRole: ['admin', 'user'],
-        },
       },
     ],
   },
@@ -71,13 +44,28 @@ const routes = [
     ],
   },
   {
-    path: '/my_lists',
+    path: '/my_notes',
     component: () => import('@/layouts/default/Default.vue'),
     children: [
       {
         path: '',
-        name: 'my_lists',
+        name: 'my_notes',
         component: () => import('@/views/MyLists.vue'),
+        meta: {
+          isAuthenticated: true,
+          // requiredRole: ['admin', 'user'],
+        },
+      },
+    ],
+  },
+  {
+    path: '/my_friends',
+    component: () => import('@/layouts/default/Default.vue'),
+    children: [
+      {
+        path: '',
+        name: 'my_friends',
+        component: () => import('@/views/MyFriends.vue'),
         meta: {
           isAuthenticated: true,
           // requiredRole: ['admin', 'user'],
@@ -96,35 +84,6 @@ const routes = [
         meta: {
           isAuthenticated: true,
           // requiredRole: ['admin', 'user'],
-        },
-      },
-    ],
-  },
-  {
-    path: '/admin_secure',
-    component: () => import('@/layouts/default/Default.vue'),
-    children: [
-      {
-        path: '',
-        name: 'admin-secure',
-        component: () => import('@/views/AdminSecure.vue'),
-        meta: {
-          isAuthenticated: true,
-          // requiredRole: ['admin'],
-        },
-      },
-    ],
-  },
-  {
-    path: '/profile',
-    component: () => import('@/layouts/default/Default.vue'),
-    children: [
-      {
-        path: '',
-        name: 'profile',
-        component: () => import('@/views/Profile.vue'),
-        meta: {
-          isAuthenticated: true,
         },
       },
     ],

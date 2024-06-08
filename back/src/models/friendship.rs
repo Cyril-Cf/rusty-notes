@@ -1,25 +1,67 @@
-// use diesel::pg::PgConnection;
+use chrono::NaiveDateTime;
 use diesel::prelude::*;
-// use diesel::sql_types::Uuid as DieselUuid;
-use juniper::GraphQLObject;
+use juniper::{GraphQLEnum, GraphQLObject};
 use uuid::Uuid;
 
 use crate::schema::friendships;
 
-#[derive(Queryable, Insertable, Identifiable, Associations, Debug, GraphQLObject)]
+use super::user::User;
+
+#[derive(Queryable, AsChangeset, Identifiable, Debug, GraphQLObject)]
 #[diesel(table_name = friendships)]
-#[diesel(belongs_to(super::user::User))]
-#[diesel(primary_key(user_id, user_id2))]
+#[diesel(primary_key(user_who_asked_id, user_who_got_asked_id))]
 #[graphql(description = "A friendship between two users")]
 pub struct Friendship {
     pub id: Uuid,
-    pub user_id: Uuid,
-    pub user_id2: Uuid,
+    pub user_who_asked_id: Uuid,
+    pub user_who_got_asked_id: Uuid,
+    pub is_validated: bool,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
-#[derive(AsChangeset)]
+#[derive(Insertable)]
 #[diesel(table_name = friendships)]
-pub struct FriendshipChangeset {
-    pub user_id: Option<Uuid>,
-    pub user_id2: Option<Uuid>,
+pub struct NewFriendship {
+    pub id: Uuid,
+    pub user_who_asked_id: Uuid,
+    pub user_who_got_asked_id: Uuid,
+    pub is_validated: bool,
+}
+
+#[derive(Debug, GraphQLObject)]
+#[graphql(description = "A friendship")]
+pub struct FriendshipGraphQL {
+    pub id: Uuid,
+    pub is_validated: bool,
+    pub friend_who_asked: User,
+    pub friend_who_got_asked: User,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
+#[derive(Debug, GraphQLEnum)]
+pub enum AddFriendStatus {
+    AddSuccessful,
+    ErrNoUserEmail,
+    ErrAlreadyFriend,
+    ErrAlreadyPendingDemand,
+}
+
+#[derive(Debug, GraphQLEnum)]
+pub enum RemoveFriendStatus {
+    RemoveSuccessful,
+    ErrNoFriendship,
+}
+
+pub enum FriendshipState {
+    ExistsAndValidated,
+    ExistsButNotValidate,
+    DoesNotExist,
+}
+
+#[derive(Debug, GraphQLEnum)]
+pub enum FriendshipAcceptingStatus {
+    AcceptingSuccessful,
+    ErrCannotAccept,
 }

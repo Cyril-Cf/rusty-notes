@@ -6,19 +6,26 @@ pub mod sql_types {
     pub struct ItemType;
 
     #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "list_permission"))]
+    pub struct ListPermission;
+
+    #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
     #[diesel(postgres_type(name = "list_type"))]
     pub struct ListType;
 
     #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
-    #[diesel(postgres_type(name = "notification_type"))]
-    pub struct NotificationType;
+    #[diesel(postgres_type(name = "notif_type"))]
+    pub struct NotifType;
 }
 
 diesel::table! {
     friendships (id) {
         id -> Uuid,
-        user_id -> Uuid,
-        user_id2 -> Uuid,
+        user_who_asked_id -> Uuid,
+        user_who_got_asked_id -> Uuid,
+        is_validated -> Bool,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -32,6 +39,8 @@ diesel::table! {
         is_checked -> Bool,
         list_id -> Uuid,
         item_type -> ItemType,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -40,6 +49,8 @@ diesel::table! {
         id -> Uuid,
         name -> Varchar,
         list_id -> Uuid,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -51,20 +62,37 @@ diesel::table! {
         id -> Uuid,
         name -> Varchar,
         list_type -> ListType,
-        user_id -> Uuid,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
 diesel::table! {
     use diesel::sql_types::*;
-    use super::sql_types::NotificationType;
+    use super::sql_types::NotifType;
 
     notifications (id) {
         id -> Uuid,
-        content -> Varchar,
         has_been_read -> Bool,
-        notification_type -> NotificationType,
+        notif_type -> NotifType,
         user_id -> Uuid,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use super::sql_types::ListPermission;
+
+    user_lists (user_id, list_id) {
+        user_id -> Uuid,
+        list_id -> Uuid,
+        is_owner -> Bool,
+        is_validated -> Bool,
+        list_permission -> ListPermission,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -75,13 +103,16 @@ diesel::table! {
         lastname -> Varchar,
         email -> Varchar,
         keycloak_uuid -> Uuid,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
 diesel::joinable!(items -> lists (list_id));
 diesel::joinable!(list_tags -> lists (list_id));
-diesel::joinable!(lists -> users (user_id));
 diesel::joinable!(notifications -> users (user_id));
+diesel::joinable!(user_lists -> lists (list_id));
+diesel::joinable!(user_lists -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     friendships,
@@ -89,5 +120,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     list_tags,
     lists,
     notifications,
+    user_lists,
     users,
 );

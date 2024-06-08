@@ -1,5 +1,5 @@
 use crate::models::user::{CreateUser, ModifyUser, NewUser, User, UserChangeset};
-use crate::schema::users::dsl::{id, keycloak_uuid, users};
+use crate::schema::users::dsl::{email, id, keycloak_uuid, users};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::r2d2::ConnectionManager;
@@ -9,8 +9,21 @@ use uuid::Uuid;
 pub fn find_user(
     conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
     user_id: Uuid,
-) -> Result<User, diesel::result::Error> {
-    users.filter(id.eq(user_id)).first::<User>(conn)
+) -> Result<Option<User>, diesel::result::Error> {
+    match users.filter(id.eq(user_id)).first::<User>(conn) {
+        Ok(user) => Ok(Some(user)),
+        Err(_) => Ok(None),
+    }
+}
+
+pub fn find_user_with_email(
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+    user_email: String,
+) -> Result<Option<User>, diesel::result::Error> {
+    match users.filter(email.eq(user_email)).first::<User>(conn) {
+        Ok(user) => Ok(Some(user)),
+        Err(_) => Ok(None),
+    }
 }
 
 pub fn find_user_with_keycloak_id(
