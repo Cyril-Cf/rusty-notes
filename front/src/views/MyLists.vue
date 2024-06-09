@@ -98,15 +98,11 @@ const openSettings = async (list: List) => {
 onMounted(async () => {
     authPromise.then(async (auth) => {
         if (auth.isAuthenticated()) {
-            let userIsInDB = await userStore.DoesUserExistInDB(auth.userId()!);
-            if (userIsInDB) {
-                let userId = userStore.currentUser?.id;
-                if (userId) {
-                    listStore.fetchLists(userId);
-                    await userStore.getFriendships(userId);
-                }
-            } else {
-                router.push({ path: "/subscription_more_infos/my_notes" });
+            const userStore = useUserStore();
+            let userId = userStore.currentUser?.id;
+            if (userId) {
+                await listStore.fetchLists(userId);
+                await userStore.getFriendships(userId);
             }
         }
     });

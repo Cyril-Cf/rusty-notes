@@ -1,5 +1,6 @@
-import { createRouter, createWebHistory, RouteLocationRaw } from 'vue-router'
-import authPromise from '@/plugins/keycloak'
+import { createRouter, createWebHistory, RouteLocationRaw } from 'vue-router';
+import authPromise from '@/plugins/keycloak';
+import { useUserStore } from "@/store/userStore";
 
 const routes = [
   {
@@ -21,21 +22,6 @@ const routes = [
         path: '',
         name: 'single_list',
         component: () => import('@/views/SingleList.vue'),
-        meta: {
-          isAuthenticated: true,
-          // requiredRole: ['admin', 'user'],
-        },
-      },
-    ],
-  },
-  {
-    path: '/subscription_more_infos/:redirectUri',
-    component: () => import('@/layouts/default/Default.vue'),
-    children: [
-      {
-        path: '',
-        name: 'subscription_more_infos',
-        component: () => import('@/views/SubscriptionMoreInfos.vue'),
         meta: {
           isAuthenticated: true,
           // requiredRole: ['admin', 'user'],
@@ -122,6 +108,10 @@ router.beforeEach((to, from, next) => {
       if (auth.isAuthenticated() && to.path !== '/unauthorized') {
         if (!to.meta?.requiredRole || to.meta?.requiredRole?.some(r => auth.userRoles().includes(r))) {
           auth.putTokenInLocalStorage();
+          const userStore = useUserStore();
+          if (userStore.currentUser == undefined) {
+            await userStore.DoesUserExistInDB(auth.userId()!);
+          }
           next();
         } else {
           auth.putTokenInLocalStorage();
@@ -129,6 +119,10 @@ router.beforeEach((to, from, next) => {
         }
       } else if (auth.isAuthenticated() && to.path === '/unauthorized') {
         auth.putTokenInLocalStorage();
+        const userStore = useUserStore();
+        if (userStore.currentUser == undefined) {
+          await userStore.DoesUserExistInDB(auth.userId()!);
+        }
         next()
       } else {
         const redirect: RouteLocationRaw = { query: { ...to.query, 'sync_me': null } }

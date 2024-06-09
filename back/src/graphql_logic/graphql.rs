@@ -19,7 +19,7 @@ use crate::services::list_tag_service;
 use crate::services::list_type_service;
 use crate::services::notification_service;
 use crate::services::user_service;
-use juniper::FieldError;
+use juniper::{graphql_value, FieldError};
 use juniper::{EmptySubscription, FieldResult, GraphQLEnum, GraphQLObject, RootNode};
 use uuid::Uuid;
 
@@ -55,13 +55,19 @@ impl Query {
         let res = user_service::find_user(conn, user_id);
         graphql_translate(res)
     }
-    pub fn find_user_with_keycloak_id(
+    pub async fn find_user_with_keycloak_id(
         context: &GraphQLContext,
         keycloak_id: Uuid,
     ) -> FieldResult<Option<User>> {
         let conn = &mut context.pool.get()?;
-        let res = user_service::find_user_with_keycloak_id(conn, keycloak_id);
-        graphql_translate(res)
+        let res = user_service::find_user_with_keycloak_id(conn, keycloak_id).await;
+        match res {
+            Ok(t) => Ok(t),
+            Err(e) => FieldResult::Err(FieldError::new(
+                e.to_string(),
+                graphql_value!({"database_error": "Impossible"}),
+            )),
+        }
     }
     pub fn get_user_friendships(
         context: &GraphQLContext,

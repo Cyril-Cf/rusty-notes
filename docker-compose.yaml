@@ -62,7 +62,7 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - .env
+      - ./front/.env
     command: ["npm", "run", "dev"]
     depends_on:
       - back
@@ -78,7 +78,7 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - ./back/.env
     depends_on:
       - postgres
       - keycloak
@@ -87,7 +87,6 @@ services:
 
 networks:
   app_network:
-    driver: bridge
 
 volumes:
   postgres_data:

@@ -41,14 +41,9 @@ onMounted(async () => {
     authPromise.then(async (auth) => {
         if (auth.isAuthenticated()) {
             const userStore = useUserStore();
-            let userIsInDB = await userStore.DoesUserExistInDB(auth.userId());
-            if (userIsInDB) {
-                let userId = userStore.currentUser?.id;
-                if (userId) {
-                    await userStore.getFriendships(userId);
-                }
-            } else {
-                router.push({ path: "/subscription_more_infos/my_friends" });
+            let userId = userStore.currentUser?.id;
+            if (userId) {
+                await userStore.getFriendships(userId);
             }
         }
     });

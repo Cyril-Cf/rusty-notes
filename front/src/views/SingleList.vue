@@ -134,15 +134,9 @@ const deleteItem = async (index: number) => {
 onMounted(async () => {
     authPromise.then(async (auth) => {
         if (auth.isAuthenticated()) {
-            const userStore = useUserStore();
-            let userIsInDB = await userStore.DoesUserExistInDB(auth.userId()!);
-            if (userIsInDB) {
-                const listStore = useListStore();
-                const listId = route.params.listId as String;
-                await listStore.fetchOne(listId);
-            } else {
-                router.push({ path: "/subscription_more_infos/my_notes" });
-            }
+            const listStore = useListStore();
+            const listId = route.params.listId as String;
+            await listStore.fetchOne(listId);
         }
     });
 });
