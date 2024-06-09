@@ -26,4 +26,6 @@ pub enum ItemTypeVariation {
     PersonInCharge,
     #[db_rename = "DEADLINE_DATE"]
     DeadlineDate,
+    #[db_rename = "PRIORITY"]
+    Priority,
 }

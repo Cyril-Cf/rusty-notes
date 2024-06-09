@@ -7,7 +7,7 @@
                         <v-col cols="12" sm="4">
                             <div>{{ list.name }}</div>
                         </v-col>
-                        <v-col @mousedown.stop cols="12" sm="1" class="d-flex flex-end">
+                        <v-col @mousedown.stop cols="12" sm="2" class="d-flex flex-end">
                             <v-tooltip>
                                 <template v-slot:activator="{ props }">
                                     <span v-bind="props"><v-icon v-if="list.isOwner" @click.stop="deleteList(list.id)"

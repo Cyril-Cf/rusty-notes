@@ -4,7 +4,8 @@ CREATE TYPE item_type_variation AS ENUM (
     'MEDIA_URL',
     'WEBSITE_URL',
     'PERSON_IN_CHARGE',
-    'DEADLINE_DATE'
+    'DEADLINE_DATE',
+    'PRIORITY'
 );
 CREATE TABLE item_types (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
@@ -17,4 +18,5 @@ VALUES ('CONTENT'),
     ('MEDIA_URL'),
     ('WEBSITE_URL'),
     ('PERSON_IN_CHARGE'),
+    ('PRIORITY'),
     ('DEADLINE_DATE');

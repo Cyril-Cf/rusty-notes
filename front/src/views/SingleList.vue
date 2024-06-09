@@ -1,7 +1,23 @@
 <template>
     <v-container class="my-5 mx-auto" style="width: 80vw;" fluid>
-        <v-row no-gutters class="mb-5">
-            <ButtonGoBackToMyLists />
+        <v-row justify="space-between" no-gutters class="mb-5">
+            <v-col cols="4">
+                <ButtonGoBackToMyLists />
+            </v-col>
+            <v-col cols="1" class="d-flex justify-center align-center">
+                <v-icon color="grey" @click="settingsDialog = true" size="small"><v-tooltip>
+                        <template v-slot:activator="{ props }">
+                            <span v-bind="props"><v-icon color="grey" size="small">
+                                    mdi-cog
+                                </v-icon></span>
+                        </template>
+                        <span>Paramètres</span>
+                    </v-tooltip>
+                </v-icon>
+            </v-col>
+            <v-dialog v-model="settingsDialog" max-width="600px">
+                <ListSettingModal @closeSettingsEmit="refreshList" />
+            </v-dialog>
         </v-row>
         <v-row>
             <v-col v-if="listStore.selectedList" cols="12">
@@ -27,12 +43,33 @@
 
                         </v-toolbar>
                     </template>
+                    <template v-slot:item.content="{ item }">
+                        <div v-if="item.content">
+                            {{ item.content }}
+                        </div>
+                    </template>
                     <template v-slot:item.box="{ item }">
                         <div v-if="item.itemType.itemTypeVariation === ItemTypeVariation.CHECKBOX">
                             <v-checkbox hide-details v-model="item.isChecked" :readonly="!canModify()"></v-checkbox>
                         </div>
-                        <div v-else-if="item.itemType.itemTypeVariation === ItemTypeVariation.CONTENT">
-                            <v-icon>mdi-circle-small</v-icon> {{ item.content }}
+                        <div v-else-if="item.itemType.itemTypeVariation === ItemTypeVariation.DEADLINE_DATE">
+                            {{ convertDateFormatToDisplay(item.deadlineDate) }}
+                        </div>
+
+                        <div v-else-if="item.itemType.itemTypeVariation === ItemTypeVariation.MEDIA_URL">
+                            {{ item.mediaUrl }}
+                        </div>
+
+                        <div v-else-if="item.itemType.itemTypeVariation === ItemTypeVariation.PERSON_IN_CHARGE">
+                            {{ item.personInCharge }}
+                        </div>
+
+                        <div v-else-if="item.itemType.itemTypeVariation === ItemTypeVariation.PRIORITY">
+                            {{ getPriorityTypeText(item.priorityType) }}
+                        </div>
+
+                        <div v-else-if="item.itemType.itemTypeVariation === ItemTypeVariation.WEBSITE_URL">
+                            {{ item.websiteUrl }}
                         </div>
                     </template>
                     <template v-slot:item.action="{ item }">
@@ -60,10 +97,11 @@
 
 <script lang="ts" setup>
 import AddItemModal from '@/components/item/modal/AddItemModal.vue'
+import ListSettingModal from '@/components/list/modal/ListSettingModal.vue';
 import { useListStore } from "@/store/listStore";
 import { useUserStore } from "@/store/userStore";
 import { computed, onMounted, ref } from "vue";
-import { ItemTypeVariation } from "@/types/Item";
+import { Item, ItemTypeVariation, PriorityType } from "@/types/Item";
 import authPromise from "@/plugins/keycloak";
 import router from "@/router";
 import { useRoute } from 'vue-router';
@@ -78,18 +116,38 @@ const listStore = useListStore();
 const addItemDialog = ref(false);
 const removeListDialog = ref(false);
 const route = useRoute();
+const settingsDialog = ref(false);
 
 const headers = [
+    { title: 'Nom', key: 'content', sortable: false },
     { title: 'Element', key: 'box', sortable: false },
-    { title: 'Nom', key: 'name', sortable: false },
     { title: 'Action', key: 'action', sortable: false },
 ];
+
+const getPriorityTypeText = (priorityType: PriorityType) => {
+    switch (priorityType) {
+        case PriorityType.LOW: return "Priorité faible";
+        case PriorityType.MIDDLE: return "Priorité moyenne";
+        case PriorityType.HIGH: return "Priorité haute";
+        default: return "";
+    }
+}
 
 const canModify = () => {
     if (listStore.selectedList?.isOwner || listStore.selectedList?.listPermission === ListPermission.CAN_SEE_AND_MODIFY) {
         return true;
     }
     return false
+}
+
+const refreshList = async () => {
+    await listStore.fetchOne(listStore.selectedList!.id);
+    settingsDialog.value = false;
+}
+
+const convertDateFormatToDisplay = (dateString: string) => {
+    const [year, month, day] = dateString.split('-');
+    return `${day}/${month}/${year}`;
 }
 
 const permissionText = computed(() => {
@@ -123,11 +181,10 @@ const deleteList = async () => {
 //     }
 // }
 
-const deleteItem = async (index: number) => {
+const deleteItem = async (item: Item) => {
     const listId = listStore.selectedList?.id;
-    const itemId = listStore.selectedList?.items.at(index)?.id;
-    if (listId && itemId) {
-        await listStore.deleteItemFromList(itemId, listId);
+    if (listId) {
+        await listStore.deleteItemFromList(item.id, listId);
     }
 }
 

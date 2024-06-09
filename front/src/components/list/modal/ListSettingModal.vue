@@ -8,15 +8,24 @@
                         <v-toolbar-title>Utilisateurs</v-toolbar-title>
                         <v-divider class="mx-4" inset vertical></v-divider>
                         <v-spacer></v-spacer>
-                        <InviteFriendToListModal @closeSettingModalEmit="emit('closeSettingsEmit')" />
+                        <InviteFriendToListModal v-if="listStore.selectedList?.isOwner"
+                            @closeSettingModalEmit="emit('closeSettingsEmit')" />
                     </v-toolbar>
                 </template>
                 <template v-slot:item.presentation="{ item }">
                     {{ item.fullname }} ({{ item.email }})
                 </template>
                 <template v-slot:item.action="{ item }">
-                    <v-icon v-if="showDeletebutton(item)" color="black" size="small" @click="removeFriend(item)">
-                        mdi-delete
+                    <v-icon v-if="showDeletebutton(item)" color="grey" @click="removeFriend(item)"
+                        size="small"><v-tooltip>
+                            <template v-slot:activator="{ props }">
+                                <span v-bind="props"><v-icon color="grey" size="small">
+                                        mdi-delete
+                                    </v-icon></span>
+                            </template>
+                            <span v-if="listStore.selectedList?.isOwner">Retirer cet utilisateur</span>
+                            <span v-else>Se retirer de la liste</span>
+                        </v-tooltip>
                     </v-icon>
                     <v-dialog v-model="openRemoveFriendToListModal" max-width="400px">
                         <RemoveFriendFromListModal
@@ -70,6 +79,7 @@ import { useListStore } from "@/store/listStore";
 import { useUserStore } from "@/store/userStore";
 import { User } from '@/types/User';
 import { VDataTable } from 'vuetify/labs/VDataTable'
+import router from "@/router";
 
 const emit = defineEmits(['closeSettingsEmit'])
 
@@ -77,7 +87,6 @@ const listStore = useListStore();
 const userStore = useUserStore();
 const openRemoveFriendToListModal = ref(false);
 const friendToRemove = ref<User | null>(null);
-
 const headers = [
     { title: 'Utilisateur', key: 'presentation', sortable: false },
     { title: 'Droit', key: 'permission', sortable: false },
@@ -98,11 +107,13 @@ interface userItem {
 
 const showDeletebutton = (user: User) => {
     if (userStore.currentUser) {
-        if (userStore.currentUser.id === user.id) {
-            return false;
+        if (listStore.selectedList?.isOwner && user.id !== userStore.currentUser?.id) {
+            return true;
+        } else if (!listStore.selectedList?.isOwner && user.id === userStore.currentUser?.id) {
+            return true;
         }
     }
-    return true;
+    return false;
 }
 
 const RemoveFriendConfirm = async () => {
@@ -110,7 +121,11 @@ const RemoveFriendConfirm = async () => {
         await listStore.removeAUserFromList(listStore.selectedList!.id, userStore.currentUser?.id, friendToRemove.value.id);
     }
     openRemoveFriendToListModal.value = false;
-    emit('closeSettingsEmit');
+    if (listStore.selectedList?.isOwner) {
+        emit('closeSettingsEmit');
+    } else {
+        router.push({ name: "my_notes" });
+    }
 }
 
 const usersItem = computed(() => {

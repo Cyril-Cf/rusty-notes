@@ -5,7 +5,7 @@
         </v-row>
         <v-row>
             <v-col cols="12">
-                <h1 class="pb-5">Créer une nouvelle liste</h1>
+                <h1 class="pb-5">Ajouter une nouvelle liste</h1>
                 <NewList />
             </v-col>
         </v-row>

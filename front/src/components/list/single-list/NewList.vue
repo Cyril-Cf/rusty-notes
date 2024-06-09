@@ -1,12 +1,24 @@
 <template>
     <div>
-        <v-form ref="form" v-model="valid">
-            <v-text-field v-model="newList.name" label="Nom de la liste" :rules="[rules.required]"
-                required></v-text-field>
+        <v-form ref="form" v-model="valid" class="mt-6">
+            <div>
+                <div class="text-h6">
+                    Type de la liste de notes
+                </div>
+                <div class="text-subtitle-4 my-4">Choisissez un type de liste en premier</div>
+                <v-select v-model="newList.listType" :items="listTypeItems" label="Type de liste" item-title="text"
+                    item-value="value" :rules="[rules.required]" return-object single-line required></v-select>
+            </div>
 
-            <v-select v-model="newList.listType" :items="listTypeItems" label="Type de liste" item-title="text"
-                item-value="value" :rules="[rules.required]" return-object single-line required></v-select>
 
+            <div v-if="newList.listType">
+                <div class="text-h6">
+                    Nom de la liste de notes
+                </div>
+                <div class="text-subtitle-4 my-4">Quel sera le nom de la liste ?</div>
+                <v-text-field v-model="newList.name" label="Nom de la liste" :rules="[rules.required]"
+                    required></v-text-field>
+            </div>
             <v-btn @click="submit" :disabled="!valid" color="primary">Créer ma Liste</v-btn>
         </v-form>
     </div>
@@ -16,7 +28,7 @@
 import { computed, ref } from 'vue';
 import { useListStore } from "@/store/listStore";
 import { useUserStore } from "@/store/userStore";
-import { ListType, NewList } from '@/types/List';
+import { NewList } from '@/types/List';
 import router from "@/router";
 
 const listStore = useListStore();
@@ -48,7 +60,7 @@ const listTypeItems = computed<ListTypeInSelect[]>(() => {
         return [];
     }
 });
-console.log(listStore.listTypes);
+
 const submit = async () => {
     if (valid.value) {
         let userId = userStore.currentUser?.id;

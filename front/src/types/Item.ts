@@ -23,7 +23,8 @@ export enum ItemTypeVariation {
     MEDIA_URL = "MEDIA_URL",
     WEBSITE_URL = "WEBSITE_URL",
     PERSON_IN_CHARGE = "PERSON_IN_CHARGE",
-    DEADLINE_DATE = "DEADLINE_DATE"
+    DEADLINE_DATE = "DEADLINE_DATE",
+    PRIORITY = "PRIORITY"
 }
 
 export enum PriorityType {
@@ -39,7 +40,7 @@ export interface NewItem {
     websiteUrl?: string;
     personInCharge?: string;
     priorityType?: PriorityType;
-    deadlineDate?: Date;
+    deadlineDate?: string;
     itemTypeId: string;
     listId: string;
 }

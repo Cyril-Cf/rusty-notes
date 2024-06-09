@@ -7,26 +7,24 @@
             <v-col cols="12">
                 <div class="text-h4 my-10">Mes notes</div>
             </v-col>
-            <v-col cols="12" v-for="(list, index) in listStore.ownedLists" :key="index">
+            <v-col cols="4" v-for="(list, index) in listStore.ownedLists" :key="index">
                 <ListItem :list="list" @deleteListEmit="deleteListOpenModale" @goToSingleListEmit="goToSingleList"
                     @openSettingsEmit="openSettings" />
             </v-col>
         </v-row>
-        <v-divider class="my-4" v-if="listStore.sharedListsValidated.length > 0"></v-divider>
         <v-row v-if="listStore.sharedListsValidated.length > 0">
             <v-col cols="12">
                 <div class="text-h4 my-10">Mes notes partagées</div>
             </v-col>
-            <v-col cols="12" v-for="(list, index) in listStore.sharedListsValidated" :key="index">
+            <v-col cols="4" v-for="(list, index) in listStore.sharedListsValidated" :key="index">
                 <ListItem :list="list" @goToSingleListEmit="goToSingleList" />
             </v-col>
         </v-row>
-        <v-divider class="my-4" v-if="listStore.sharedListToValidate.length > 0"></v-divider>
         <v-row v-if="listStore.sharedListToValidate.length > 0">
             <v-col cols="12">
                 <div class="text-h4 my-10">Mes invitations</div>
             </v-col>
-            <v-col cols="12" v-for="(list, index) in listStore.sharedListToValidate" :key="index">
+            <v-col cols="4" v-for="(list, index) in listStore.sharedListToValidate" :key="index">
                 <ListItem :list="list" @acceptInvitationEmit="acceptInvitation"
                     @refuseInvitationEmit="refuseInvitation" />
             </v-col>

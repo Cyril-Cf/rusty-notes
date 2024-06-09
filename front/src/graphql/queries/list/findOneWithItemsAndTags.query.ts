@@ -16,6 +16,7 @@ export const findOneWithItemsAndTags = gql`
             }
             isOwner
             items {
+                createdAt
                 id
                 content
                 isChecked

@@ -23,7 +23,6 @@
 import { ref, onMounted } from 'vue';
 import { useUserStore } from "@/store/userStore";
 import authPromise from "@/plugins/keycloak";
-import router from "@/router";
 import MyFriendsList from '@/components/friend/list-friend/MyFriendsList.vue';
 import FriendDemandList from '@/components/friend/list-friend/FriendDemandList.vue';
 import AddFriendModal from '@/components/friend/modal/AddFriendModal.vue';

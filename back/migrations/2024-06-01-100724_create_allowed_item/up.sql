@@ -141,6 +141,18 @@ VALUES (
         (
             SELECT id
             FROM list_types
+            WHERE name = 'Notes académiques'
+        ),
+        (
+            SELECT id
+            FROM item_types
+            WHERE item_type_variation = 'PRIORITY'
+        )
+    ),
+    (
+        (
+            SELECT id
+            FROM list_types
             WHERE name = 'Notes de gestion de projet'
         ),
         (
@@ -183,6 +195,18 @@ VALUES (
             SELECT id
             FROM item_types
             WHERE item_type_variation = 'PERSON_IN_CHARGE'
+        )
+    ),
+    (
+        (
+            SELECT id
+            FROM list_types
+            WHERE name = 'Notes de gestion de projet'
+        ),
+        (
+            SELECT id
+            FROM item_types
+            WHERE item_type_variation = 'PRIORITY'
         )
     ),
     (
